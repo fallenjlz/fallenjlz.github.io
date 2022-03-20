@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "kubernetes operator devlop"
-date:   2022-03-21 23:52:29 +0800
+date:   2022-03-20 10:52:29 +0800
 categories: jekyll update
 ---
 
