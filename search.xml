@@ -1,0 +1,1223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Aws monitor</title>
+    <url>/2022/10/31/Aws-monitor/</url>
+    <content><![CDATA[<h1 id="AWS监控"><a href="#AWS监控" class="headerlink" title="AWS监控"></a>AWS监控</h1><h2 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h2><h3 id="aws官方监控工具"><a href="#aws官方监控工具" class="headerlink" title="aws官方监控工具"></a>aws官方监控工具</h3><ol>
+<li>cloudwatch， aws默认已经开启</li>
+<li>Insights 和操作系统监控</li>
+<li>增强监控系统<span id="more"></span></li>
+</ol>
+<h3 id="Prometheus-MySQLD-EXPORTER"><a href="#Prometheus-MySQLD-EXPORTER" class="headerlink" title="Prometheus MySQLD EXPORTER"></a>Prometheus MySQLD EXPORTER</h3><p>Prometheus提供的MySQLD Exporter实现对MySQL数据库性能以及资源利用率的监控和度量。</p>
+<p>能够提供一些数据库自身的吞吐量、连接情况、监控缓冲池使用情况、查询性能等基本能力做监控。</p>
+<p>AWS默认以 1 分钟为间隔自动将 Amazon RDS 指标数据发送到 CloudWatch。RDS的指标和Aws自身耦合性高，性能和系统级指标多未开放出来，Aws自身监控工具采集的指标范围更广，数量更多，更关键，对于RDS，使用Aws官方监控工具收集指标和告警，更加全面、高效、可靠，提供了更多扩展的监控功能。</p>
+<h4 id="以下列举一些开源exporter无法做到的场景"><a href="#以下列举一些开源exporter无法做到的场景" class="headerlink" title="以下列举一些开源exporter无法做到的场景"></a>以下列举一些开源exporter无法做到的场景</h4><h5 id="和Aws关联产品相关的指标"><a href="#和Aws关联产品相关的指标" class="headerlink" title="和Aws关联产品相关的指标"></a>和Aws关联产品相关的指标</h5><p>ReplicaLag副本滞后、EBSIOBalance% EBS IO 余额（百分比）、DBParameterGroups参数组数量、DBSecurityGroups安全组数量等。</p>
+<p><strong>Performance Insights监控</strong></p>
+<p>作用：为帮助确定和分析性能问题。</p>
+<p>Performance Insights 在现有 Amazon RDS 监控功能的基础上进行了扩展，以便展示并帮助您分析数据库性能。提供控制面板，可视化数据库负责，可基于等待状态、SQL 语句、主机或用户来筛选负载。</p>
+<p>提供免费套餐 7 天的性能数据历史记录和每月 100 万个 API 请求。对较长期限的性能数据历史记录需求要付费</p>
+<p>批量开启方式</p>
+<ul>
+<li>可通过aws 的cli批量开启</li>
+</ul>
+<h5 id="增强监测"><a href="#增强监测" class="headerlink" title="增强监测"></a>增强监测</h5><p>作用：可以实时监控数据库实例的操作系统</p>
+<p>指标存储：cloudwatch logs 默认30天</p>
+<p>批量开启方式：</p>
+<ul>
+<li>aws cli</li>
+<li>rds的api</li>
+</ul>
+<h5 id="事件、日志和数据库活动流"><a href="#事件、日志和数据库活动流" class="headerlink" title="事件、日志和数据库活动流"></a>事件、日志和数据库活动流</h5><ul>
+<li>数据库实例</li>
+<li>数据库参数组</li>
+<li>数据库安全组</li>
+<li>数据库快照</li>
+<li>RDS Proxy 事件</li>
+</ul>
+<h4 id="开启"><a href="#开启" class="headerlink" title="开启"></a>开启</h4><ul>
+<li>通过aws cli或aws sdk编写批量开启的脚本</li>
+<li>使用git对这些脚本做版本化</li>
+<li>针对新增实例：通过CloudWatch的定时任务规则，自动调用Lambda 获取所有的对应资源列表、已创建CloudWatch监控的资源列表，并进行比对，实现自动创建、级联删除CloudWatch监控告警的功能</li>
+</ul>
+<h4 id="告警架构"><a href="#告警架构" class="headerlink" title="告警架构"></a>告警架构</h4><p><img src="https://s3.cn-north-1.amazonaws.com.cn/awschinablog/enterprise-wechat-and-dingtalk-receiving-amazon-cloudwatch-alarms1.png" alt="img"></p>
+<p>Amazon CloudWatch 作为事件触发器，当它收到告警信息、定时任务、特定事件发生等事件时，它可以直接触发 AWS Lambda 来执行函数内容。业务将消息推送到 SNS ，由 SNS 来触发后续的操作。如： SNS  触发 AWS Lambda 执行、 SNS  发送邮件&#x2F;短信通知等。</p>
+<p>Amazon CloudWatch  可以用来收集 AWS  包括 EC2 、 RDS 、 EKS 等各种服务运行日志也可以收集用户应用程序日志，可以作为 AWS 上日志数据集散地。同时在 CloudWatch 上可以设置基于指标的告警、基于时间和事件的规则，它可以与 Amazon SNS 和 Lambda 等其他AWS服务进行使用。</p>
+<p>AWS Lambda 是无服务器的函数计算服务。通过  AWS Lambda ，无需预置或管理服务器即可运行代码。借助  Lambda ，您几乎可以为任何类型的应用程序或后端服务运行代码，而且完全无需管理。您可以将您的代码设置为自动从其他  AWS  服务如： CloudWatch 、 SNS 等触发，或者直接从任何  Web 或移动应用程序调用。</p>
+<p>Amazon CloudWatch  作为AWS平台上告警和监控信息的集散地，将它与 SNS 、 Lambda 配合，利用 AWS Lambda 函数计算服务灵活的特点，可以将 AWS 服务的监控和告警信息轻松发送到微信、钉钉、 Zabbix 等第三方系统，实现自定义监控告警。</p>
+<p>Amazon SNS 是一项用于应用与应用之间以及应用与人之间通信的完全托管型消息收发服务。</p>
+<h4 id="告警方式"><a href="#告警方式" class="headerlink" title="告警方式"></a>告警方式</h4><p><img src="/images/alarm.drawio.svg" alt="alarm.drawio"></p>
+<p>当 指标超出设定阈值后，CloudWatch 触发告警事件，并将事件消息通过 SNS 发送到 Lambda 函数。Lambda函数执行用户自定义的代码，包括：解析告警消息并发送到slack lark等</p>
+<ul>
+<li><p>确定需要告警的指标</p>
+</li>
+<li><p>创建SNS、lambda</p>
+</li>
+<li><p>通过Aws cli或sdk go等编写批量开启告警的脚本</p>
+</li>
+<li><p>批量开启告警</p>
+</li>
+</ul>
+<h4 id="监控面板"><a href="#监控面板" class="headerlink" title="监控面板"></a>监控面板</h4><ul>
+<li>grafana添加cloudwatch源</li>
+<li>aws 控制台 cloudwatch面板</li>
+</ul>
+<h4 id="指标的获取及存储"><a href="#指标的获取及存储" class="headerlink" title="指标的获取及存储"></a>指标的获取及存储</h4><ul>
+<li>长久存储，可以修改cloudwatch指标保存时间</li>
+<li>通过telegraf cloudwatch 插件拉取AWS&#x2F;Elasticahe命名空间的指标，prometheus获取指标后，remote write到grafana mimir，做持久存储 <a href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cloudwatch">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cloudwatch</a></li>
+<li>aws资源的cloudwatch指标可以通过telegraf的cloudwatch-input插件，抓到prometheus，并针对这些指标做长久存储，通过Prometheus的远程写能力，将数据存储到Mimir集群。</li>
+</ul>
+<h2 id="ElastiCache"><a href="#ElastiCache" class="headerlink" title="ElastiCache"></a><strong>ElastiCache</strong></h2><h3 id="指标收集和告警"><a href="#指标收集和告警" class="headerlink" title="指标收集和告警"></a>指标收集和告警</h3><p>默认已将指标传给了cloudwatch</p>
+<p>通过cloudwatch指标，可深入了解ElastiCache的性能，Aws上的监控从主机级到集群级别全面覆盖，指标比较全面，能更详细的监控ElastiCache</p>
+<h4 id="开启方式"><a href="#开启方式" class="headerlink" title="开启方式"></a>开启方式</h4><ul>
+<li>cloudwatch指标默认已开启，ElastiCache 提供可用于监控集群的指标，ElastiCache 提供主机层面级指标（例如 CPU 使用率）和特定于缓存引擎软件的指标（例如缓存获取次数和缓存未命中数）。这些指标每隔 60 秒对每个缓存节点进行测量并发布结果。</li>
+</ul>
+<h4 id="告警方式-1"><a href="#告警方式-1" class="headerlink" title="告警方式"></a>告警方式</h4><ul>
+<li>cloudwatch配合sns和lambda</li>
+</ul>
+<h3 id="事件通知"><a href="#事件通知" class="headerlink" title="事件通知"></a>事件通知</h3><p>您可以配置 ElastiCache 以使用 Amazon Simple Notification Service (Amazon SNS) 发送重要集群事件的通知。</p>
+<h4 id="开启方式-1"><a href="#开启方式-1" class="headerlink" title="开启方式"></a>开启方式</h4><ul>
+<li>建立amazon sns</li>
+<li>elastcache添加amazon sns，可以通过aws cli批量添加</li>
+<li>针对新增实例：通过CloudWatch的定时任务规则，自动调用Lambda 获取所有的对应资源列表、已创建CloudWatch监控的资源列表，并进行比对，实现自动创建、级联删除CloudWatch监控告警的功能</li>
+</ul>
+<h4 id="指标的获取及存储-1"><a href="#指标的获取及存储-1" class="headerlink" title="指标的获取及存储"></a>指标的获取及存储</h4><ul>
+<li>长久存储，可以修改cloudwatch指标保存时间</li>
+<li>通过telegraf cloudwatch 插件拉取AWS&#x2F;RDS命名空间的指标，prometheus获取指标后，remote write到grafana mimir，做持久存储 <a href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cloudwatch%E3%80%82aws%E8%B5%84%E6%BA%90%E7%9A%84cloudwatch%E6%8C%87%E6%A0%87%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87telegraf%E7%9A%84cloudwatch-input%E6%8F%92%E4%BB%B6%EF%BC%8C%E6%8A%93%E5%88%B0prometheus%EF%BC%8C%E5%B9%B6%E9%92%88%E5%AF%B9%E8%BF%99%E4%BA%9B%E6%8C%87%E6%A0%87%E5%81%9A%E9%95%BF%E4%B9%85%E5%AD%98%E5%82%A8%EF%BC%8C%E9%80%9A%E8%BF%87Prometheus%E7%9A%84%E8%BF%9C%E7%A8%8B%E5%86%99%E8%83%BD%E5%8A%9B%EF%BC%8C%E5%B0%86%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E5%88%B0Mimir%E9%9B%86%E7%BE%A4%E3%80%82">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cloudwatch。aws资源的cloudwatch指标可以通过telegraf的cloudwatch-input插件，抓到prometheus，并针对这些指标做长久存储，通过Prometheus的远程写能力，将数据存储到Mimir集群。</a></li>
+</ul>
+<h2 id="EC2"><a href="#EC2" class="headerlink" title="EC2"></a>EC2</h2><p>通过node exporter安装到主机上，采集指标，给prometheus</p>
+<h4 id="开启方式-2"><a href="#开启方式-2" class="headerlink" title="开启方式"></a>开启方式</h4><ol>
+<li>准备node exporter脚本和一台跳板机</li>
+<li>跳板机上利用ansible 按批次安装node exporter</li>
+<li>针对新增实例：自定义镜像，或在新建新实例时应用初始化脚本</li>
+</ol>
+<h4 id="监控面板-1"><a href="#监控面板-1" class="headerlink" title="监控面板"></a>监控面板</h4><ul>
+<li>prometheus通过node exporter获取指标</li>
+<li>grafana查询prometheus做监控面板</li>
+</ul>
+<h4 id="告警方式-2"><a href="#告警方式-2" class="headerlink" title="告警方式"></a>告警方式</h4><ul>
+<li>alertmanager</li>
+</ul>
+<h4 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h4><p>针对数量庞大的ec2实例，可以通过Aws提供的API就可以找到所有需要监控的云主机，做动态服务发现</p>
+<ul>
+<li>准备具有ec2:DescribeInstances和ec2:DescribeAvailabilityZones的iam用户的AKSK</li>
+<li>配置ec2_sd_configs</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">&lt;ec2_sd_config&gt;</span></span><br><span class="line"><span class="string">EC2</span> <span class="string">SD</span> <span class="string">configurations</span> <span class="string">allow</span> <span class="string">retrieving</span> <span class="string">scrape</span> <span class="string">targets</span> <span class="string">from</span> <span class="string">AWS</span> <span class="string">EC2</span> <span class="string">instances.</span> <span class="string">The</span> <span class="string">private</span> <span class="string">IP</span> <span class="string">address</span> <span class="string">is</span> <span class="string">used</span> <span class="string">by</span> <span class="string">default,</span> <span class="string">but</span> <span class="string">may</span> <span class="string">be</span> <span class="string">changed</span> <span class="string">to</span> <span class="string">the</span> <span class="string">public</span> <span class="string">IP</span> <span class="string">address</span> <span class="string">with</span> <span class="string">relabeling.</span></span><br><span class="line"></span><br><span class="line"><span class="string">The</span> <span class="string">IAM</span> <span class="string">credentials</span> <span class="string">used</span> <span class="string">must</span> <span class="string">have</span> <span class="string">the</span> <span class="string">ec2:DescribeInstances</span> <span class="string">permission</span> <span class="string">to</span> <span class="string">discover</span> <span class="string">scrape</span> <span class="string">targets,</span> <span class="string">and</span> <span class="string">may</span> <span class="string">optionally</span> <span class="string">have</span> <span class="string">the</span> <span class="string">ec2:DescribeAvailabilityZones</span> <span class="string">permission</span> <span class="string">if</span> <span class="string">you</span> <span class="string">want</span> <span class="string">the</span> <span class="string">availability</span> <span class="string">zone</span> <span class="string">ID</span> <span class="string">available</span> <span class="string">as</span> <span class="string">a</span> <span class="string">label</span> <span class="string">(see</span> <span class="string">below).</span></span><br><span class="line"></span><br><span class="line"><span class="attr">The following meta labels are available on targets during relabeling:</span></span><br><span class="line"></span><br><span class="line"><span class="attr">__meta_ec2_ami:</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">Amazon</span> <span class="string">Machine</span> <span class="string">Image</span></span><br><span class="line"><span class="attr">__meta_ec2_architecture:</span> <span class="string">the</span> <span class="string">architecture</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_availability_zone:</span> <span class="string">the</span> <span class="string">availability</span> <span class="string">zone</span> <span class="string">in</span> <span class="string">which</span> <span class="string">the</span> <span class="string">instance</span> <span class="string">is</span> <span class="string">running</span></span><br><span class="line"><span class="attr">__meta_ec2_availability_zone_id:</span> <span class="string">the</span> <span class="string">availability</span> <span class="string">zone</span> <span class="string">ID</span> <span class="string">in</span> <span class="string">which</span> <span class="string">the</span> <span class="string">instance</span> <span class="string">is</span> <span class="string">running</span> <span class="string">(requires</span> <span class="string">ec2:DescribeAvailabilityZones)</span></span><br><span class="line"><span class="attr">__meta_ec2_instance_id:</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">instance</span> <span class="string">ID</span></span><br><span class="line"><span class="attr">__meta_ec2_instance_lifecycle:</span> <span class="string">the</span> <span class="string">lifecycle</span> <span class="string">of</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">instance,</span> <span class="string">set</span> <span class="string">only</span> <span class="string">for</span> <span class="string">&#x27;spot&#x27;</span> <span class="string">or</span> <span class="string">&#x27;scheduled&#x27;</span> <span class="string">instances,</span> <span class="string">absent</span> <span class="string">otherwise</span></span><br><span class="line"><span class="attr">__meta_ec2_instance_state:</span> <span class="string">the</span> <span class="string">state</span> <span class="string">of</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_instance_type:</span> <span class="string">the</span> <span class="string">type</span> <span class="string">of</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_ipv6_addresses:</span> <span class="string">comma</span> <span class="string">separated</span> <span class="string">list</span> <span class="string">of</span> <span class="string">IPv6</span> <span class="string">addresses</span> <span class="string">assigned</span> <span class="string">to</span> <span class="string">the</span> <span class="string">instance&#x27;s</span> <span class="string">network</span> <span class="string">interfaces,</span> <span class="string">if</span> <span class="string">present</span></span><br><span class="line"><span class="attr">__meta_ec2_owner_id:</span> <span class="string">the</span> <span class="string">ID</span> <span class="string">of</span> <span class="string">the</span> <span class="string">AWS</span> <span class="string">account</span> <span class="string">that</span> <span class="string">owns</span> <span class="string">the</span> <span class="string">EC2</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_platform:</span> <span class="string">the</span> <span class="string">Operating</span> <span class="string">System</span> <span class="string">platform,</span> <span class="string">set</span> <span class="string">to</span> <span class="string">&#x27;windows&#x27;</span> <span class="string">on</span> <span class="string">Windows</span> <span class="string">servers,</span> <span class="string">absent</span> <span class="string">otherwise</span></span><br><span class="line"><span class="attr">__meta_ec2_primary_subnet_id:</span> <span class="string">the</span> <span class="string">subnet</span> <span class="string">ID</span> <span class="string">of</span> <span class="string">the</span> <span class="string">primary</span> <span class="string">network</span> <span class="string">interface,</span> <span class="string">if</span> <span class="string">available</span></span><br><span class="line"><span class="attr">__meta_ec2_private_dns_name:</span> <span class="string">the</span> <span class="string">private</span> <span class="string">DNS</span> <span class="string">name</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance,</span> <span class="string">if</span> <span class="string">available</span></span><br><span class="line"><span class="attr">__meta_ec2_private_ip:</span> <span class="string">the</span> <span class="string">private</span> <span class="string">IP</span> <span class="string">address</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance,</span> <span class="string">if</span> <span class="string">present</span></span><br><span class="line"><span class="attr">__meta_ec2_public_dns_name:</span> <span class="string">the</span> <span class="string">public</span> <span class="string">DNS</span> <span class="string">name</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance,</span> <span class="string">if</span> <span class="string">available</span></span><br><span class="line"><span class="attr">__meta_ec2_public_ip:</span> <span class="string">the</span> <span class="string">public</span> <span class="string">IP</span> <span class="string">address</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance,</span> <span class="string">if</span> <span class="string">available</span></span><br><span class="line"><span class="attr">__meta_ec2_region:</span> <span class="string">the</span> <span class="string">region</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_subnet_id:</span> <span class="string">comma</span> <span class="string">separated</span> <span class="string">list</span> <span class="string">of</span> <span class="string">subnets</span> <span class="string">IDs</span> <span class="string">in</span> <span class="string">which</span> <span class="string">the</span> <span class="string">instance</span> <span class="string">is</span> <span class="string">running,</span> <span class="string">if</span> <span class="string">available</span></span><br><span class="line"><span class="string">__meta_ec2_tag_&lt;tagkey&gt;:</span> <span class="string">each</span> <span class="string">tag</span> <span class="string">value</span> <span class="string">of</span> <span class="string">the</span> <span class="string">instance</span></span><br><span class="line"><span class="attr">__meta_ec2_vpc_id:</span> <span class="string">the</span> <span class="string">ID</span> <span class="string">of</span> <span class="string">the</span> <span class="string">VPC</span> <span class="string">in</span> <span class="string">which</span> <span class="string">the</span> <span class="string">instance</span> <span class="string">is</span> <span class="string">running,</span> <span class="string">if</span> <span class="string">available</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="指标的获取及存储-2"><a href="#指标的获取及存储-2" class="headerlink" title="指标的获取及存储"></a>指标的获取及存储</h4><h5 id="方案一："><a href="#方案一：" class="headerlink" title="方案一："></a>方案一：</h5><p>仅在一个vpc中搭建prometheus，mimir，此vpc通过peer connection、security group、subnet routes和其他vpc互通，prometheus</p>
+<p>获取exporter的指标后，write给mimir，mimir通过mino的object storage backend s3，存储至Amazon S3。</p>
+<p><img src="/images/peernetwork.drawio.svg" alt="image-20221031103040455"></p>
+<p>![image-20221030165215928](&#x2F;Users&#x2F;evanliu&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20221030165215928.png)</p>
+<h5 id="方案二："><a href="#方案二：" class="headerlink" title="方案二："></a>方案二：</h5><p>在ops-vpc中搭建ha的mimir集群，在每个vpc都搭建一个prometheus，抓取此vpc中各类exporter的指标，对mimir集群的NLB做vpc private link并，安全组开放mimir集群的写端口， 其他vpc的prometheus remote write到ops-vpc重的mimr集群并定期上传指标至对象存储，完成长久存储。</p>
+<h5 id=""><a href="#" class="headerlink" title=""></a><img src="/images/network.drawio.svg" alt="network.drawio"></h5><h2 id="Opensearch"><a href="#Opensearch" class="headerlink" title="Opensearch"></a>Opensearch</h2><p>opensearch默认每分钟cloudwatch发送指标，指标会存档两周后丢弃，收取控制面板和警报的费用。指标已经默认开启，只添加告警即可。</p>
+<h4 id="告警方式-3"><a href="#告警方式-3" class="headerlink" title="告警方式"></a>告警方式</h4><ul>
+<li>通过sns和lambda</li>
+</ul>
+<h4 id="告警开启方式"><a href="#告警开启方式" class="headerlink" title="告警开启方式"></a>告警开启方式</h4><ul>
+<li>通过aws cli脚本</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Aws</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>golang</title>
+    <url>/2022/08/16/golang/</url>
+    <content><![CDATA[<h2 id="go-modules"><a href="#go-modules" class="headerlink" title="go modules"></a>go modules</h2><ul>
+<li><code>go mod init</code>创建一个新模块，初始化<code>go.mod</code>描述它的文件<span id="more"></span> 。</li>
+<li><code>go build</code>, <code>go test</code>, 和其他包构建命令<code>go.mod</code>根据需要添加新的依赖项。</li>
+<li><code>go list -m all</code>打印当前模块的依赖项。</li>
+<li><code>go get</code>更改所需版本的依赖项（或添加新的依赖项）。</li>
+<li><code>go mod tidy</code>删除未使用的依赖项</li>
+</ul>
+<ul>
+<li>GOPROXY&#x3D;”<a href="https://proxy.golang.org,direct”/">https://proxy.golang.org,direct”</a></li>
+</ul>
+<h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><blockquote>
+<p>接口类型是一种抽象的类型。它不会暴露出它所代表的对象的内部值的结构和这个对象支持的基础操作的集合；它们只会表现出它们自己的方法。也就是说当你有看到一个接口类型的值时，你不知道它是什么，唯一知道的就是可以通过它的方法来做什么。</p>
+</blockquote>
+<h3 id="接口类型"><a href="#接口类型" class="headerlink" title="接口类型"></a>接口类型</h3><blockquote>
+<p>接口类型具体描述了一系列方法的集合，一个实现了这些方法的具体类型是这个接口类型的实例。</p>
+</blockquote>
+<p>接口内嵌，语法和结构内嵌相似，可以简写命名接口</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> io</span><br><span class="line"><span class="keyword">type</span> Reader <span class="keyword">interface</span> &#123;</span><br><span class="line">    Read(p []<span class="type">byte</span>) (n <span class="type">int</span>, err <span class="type">error</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Closer <span class="keyword">interface</span> &#123;</span><br><span class="line">    Close() <span class="type">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> ReadWriter <span class="keyword">interface</span> &#123;</span><br><span class="line">    Reader</span><br><span class="line">    Writer</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> ReadWriteCloser <span class="keyword">interface</span> &#123;</span><br><span class="line">    Reader</span><br><span class="line">    Writer</span><br><span class="line">    Closer</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="实现接口条件"><a href="#实现接口条件" class="headerlink" title="实现接口条件"></a>实现接口条件</h3><blockquote>
+<p>一个类型如果拥有一个接口需要的所有方法，那么这个类型就实现了这个接口。</p>
+<p>例如，<code>*os.File</code>类型实现了io.Reader，Writer，Closer，和ReadWriter接口。</p>
+</blockquote>
+<p>IntSet类型的String方法的接收者是一个指针类型，所以我们不能在一个不能寻址的IntSet值上调用这个方法：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> IntSet <span class="keyword">struct</span> &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*IntSet)</span></span> String() <span class="type">string</span></span><br><span class="line"><span class="keyword">var</span> _ = IntSet&#123;&#125;.String() <span class="comment">// compile error: String requires *IntSet receiver</span></span><br></pre></td></tr></table></figure>
+
+<p>但是我们可以在一个IntSet变量上调用这个方法：</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> s IntSet</span><br><span class="line"><span class="keyword">var</span> _ = s.String() <span class="comment">// OK: s is a variable and &amp;s has a String method</span></span><br></pre></td></tr></table></figure>
+
+<p>然而，由于只有<code>*IntSet</code>类型有String方法，所以也只有<code>*IntSet</code>类型实现了fmt.Stringer接口：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> _ fmt.Stringer = &amp;s <span class="comment">// OK</span></span><br><span class="line"><span class="keyword">var</span> _ fmt.Stringer = s  <span class="comment">// compile error: IntSet lacks String method</span></span><br></pre></td></tr></table></figure>
+
+<p>空接口类型对实现它的类型没有要求，所以我们可以将任意一个值赋给空接口类型。</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> any <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">any = <span class="literal">true</span></span><br><span class="line">any = <span class="number">12.34</span></span><br><span class="line">any = <span class="string">&quot;hello&quot;</span></span><br><span class="line">any = <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>&#123;<span class="string">&quot;one&quot;</span>: <span class="number">1</span>&#125;</span><br><span class="line">any = <span class="built_in">new</span>(bytes.Buffer)</span><br></pre></td></tr></table></figure>
+
+<p>…</p>
+<h2 id="Goroutines"><a href="#Goroutines" class="headerlink" title="Goroutines"></a>Goroutines</h2><blockquote>
+<p>在Go语言中，每一个并发的执行单元叫作一个goroutine。</p>
+</blockquote>
+<blockquote>
+<p>当一个程序启动时，其主函数即在一个单独的goroutine中运行，我们叫它main goroutine。新的goroutine会用go语句来创建。在语法上，go语句是一个普通的函数或方法调用前加上关键字go。go语句会使其语句中的函数在一个新创建的goroutine中运行。而go语句本身会迅速地完成。</p>
+</blockquote>
+]]></content>
+  </entry>
+  <entry>
+    <title>linux网络性能优化笔记</title>
+    <url>/2022/08/07/linux%E7%BD%91%E7%BB%9C%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h3 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h3><ul>
+<li><strong>带宽</strong>：表示链路的最大传输速率，单位通常为 b&#x2F;s</li>
+<li><strong>吞吐量</strong>： 表示单位时间内成功传输的数据量，单位通常为 b&#x2F;s（比特 &#x2F; 秒）或者 B&#x2F;s（字节 &#x2F; 秒）。吞吐量受带宽限制，而吞吐量 &#x2F; 带宽，也就是该网络的使用率。<span id="more"></span> </li>
+<li><strong>延时</strong>：表示从网络请求发出后，一直到收到远端响应，所需要的时间延迟。在不同场景中，这一指标可能会有不同含义。比如，它可以表示，建立连接需要的时间（比如 TCP 握手延时），或一个数据包往返所需的时间（比如 RTT）。</li>
+<li><strong>PPS</strong>： 是 Packet Per Second（包 &#x2F; 秒）的缩写，表示以网络包为单位的传输速率。PPS 通常用来评估网络的转发能力，比如硬件交换机，通常可以达到线性转发（即 PPS 可以达到或者接近理论最大值）。而基于 Linux 服务器的转发，则容易受网络包大小的影响。</li>
+</ul>
+<p>除了这些指标，网络的可用性（网络能否正常通信）、并发连接数（TCP 连接数量）、丢包率（丢包百分比）、重传率（重新传输的网络包比例）等也是常用的性能指标。可以用<strong>sar、ss、ping</strong>等，查看这些指标</p>
+<h3 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h3><p>ifconfig 和 ip 命令输出的指标基本相同，只是显示格式略微不同。比如，它们都包括了网络接口的状态标志、MTU 大小、IP、子网、MAC 地址以及网包收发的统计信息。</p>
+<ol>
+<li><p>接口状态标志</p>
+</li>
+<li><p>mtu大小 默认1500</p>
+</li>
+<li><p>接口ip、子网、及MAC地址</p>
+</li>
+<li><p>网络收发的字节数、包数、错误数以及丢包情况，特别是 TX 和 RX 部分的 errors、dropped、overruns、carrier 以及 collisions 等指标不为 0 时，通常表示出现了网络 I&#x2F;O 问题。其中：</p>
+<p> <strong>errors</strong> 表示发生错误的数据包数，比如校验错误、帧同步错误等；</p>
+<p> <strong>dropped</strong> 表示丢弃的数据包数，即数据包已经收到了 Ring Buffer，但因为内存不足等原因丢包；</p>
+<p> <strong>overruns</strong> 表示超限数据包数，即网络 I&#x2F;O 速度过快，导致 Ring Buffer 中的数据包来不及处理（队列满）而导致的丢包；</p>
+<p> <strong>carrier</strong> 表示发生 carrirer 错误的数据包数，比如双工模式不匹配、物理电缆出现问题等；collisions 表示碰撞数据包数。</p>
+</li>
+</ol>
+<h3 id="socket状态"><a href="#socket状态" class="headerlink" title="socket状态"></a>socket状态</h3><p>netstat 或者 ss ，来查看套接字、网络栈、网络接口以及路由表的信息。ss相比netstat性能更好。</p>
+<p>展示了套接字的状态、接收队列、发送队列、本地地址、远端地址、进程 PID 和进程名称。<strong>接收队列（Recv-Q）</strong>和<strong>发送队列（Send-Q）</strong>不是 0 时，说明有网络包的堆积发生。</p>
+<p>当套接字处于连接状态（Established）时，Recv-Q 表示套接字缓冲还没有被应用程序取走的字节数（即接收队列长度）。而 Send-Q 表示还没有被远端主机确认的字节数（即发送队列长度）。</p>
+<p>当套接字处于监听状态（Listening）时，Recv-Q 表示全连接队列的长度。而 Send-Q 表示全连接队列的最大长度。</p>
+<p>全连接：已完成三次握手，这个连接会加到全连接队列。等待accep()取走，接受客户端请求。</p>
+<p>半连接：未完成三次握手，连接只进行了一半，收到客户端syn后，服务端发送syn+ack，还未等到客户端ack。</p>
+<h3 id="吞吐和PPS"><a href="#吞吐和PPS" class="headerlink" title="吞吐和PPS"></a>吞吐和PPS</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sar -n DEV 1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>rxpck&#x2F;s 和 txpck&#x2F;s 分别是接收和发送的 PPS，单位为包 &#x2F; 秒。</p>
+<p>rxkB&#x2F;s 和 txkB&#x2F;s 分别是接收和发送的吞吐量，单位是 KB&#x2F; 秒。</p>
+<p>rxcmp&#x2F;s 和 txcmp&#x2F;s 分别是接收和发送的压缩数据包数，单位是包 &#x2F; 秒。</p>
+<p>%ifutil 是网络接口的使用率，即半双工模式下为 (rxkB&#x2F;s+txkB&#x2F;s)&#x2F;Bandwidth，而全双工模式下为 max(rxkB&#x2F;s, txkB&#x2F;s)&#x2F;Bandwidth。</p>
+<h3 id="连通性和延时"><a href="#连通性和延时" class="headerlink" title="连通性和延时"></a>连通性和延时</h3><p>ping测试远程主机的连通性和延时，ping的输出</p>
+<ul>
+<li>ICMP 请求的信息，包括 ICMP 序列号（icmp_seq）、TTL（生存时间，或者跳数）以及往返延时</li>
+<li>ICMP 请求的汇总</li>
+</ul>
+<h3 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h3><p>pktgen 测PPS ，先用modprobe pktgen加载到内核，会有同cpu数量保持一致的pktgen线程，通过&#x2F;proc下的文件与线程交互</p>
+<p>iperf、netperf测tcp&#x2F;udp性能：吞吐量</p>
+<p>wrk 测http性能，结合lua插件，模拟用户请求payload：qps、请求延迟、吞吐量等</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>openresty笔记</title>
+    <url>/2022/08/08/openresty%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="lua的性能分析和优化"><a href="#lua的性能分析和优化" class="headerlink" title="lua的性能分析和优化"></a>lua的性能分析和优化</h2><h3 id="systemtap"><a href="#systemtap" class="headerlink" title="systemtap"></a>systemtap</h3><p>systemtap是linux内核的动态追踪技术，通过它的接口可以快速开发出调试和分析性能的代码<span id="more"></span> </p>
+<p>使用需要先安装kernel-devel，kernel-dubug包，最后安装system包</p>
+<h3 id="下载分析工具"><a href="#下载分析工具" class="headerlink" title="下载分析工具"></a>下载分析工具</h3><p>主要使用openresty-systemtap-tookit和stapxx，stapxx是对openresty-systemtap-tookit的简单扩展，侧重对ngx_lua的性能分析。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/openresty/openresty-systemtap-toolkit.git</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/openresty/stapxx.git</span><br></pre></td></tr></table></figure>
+
+<p>FlameGraph可以将上面两个工具采集到的性能数据生成火焰图。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/brendangregg/FlameGraph.git</span><br></pre></td></tr></table></figure>
+
+<h3 id="执行阶段耗时分析"><a href="#执行阶段耗时分析" class="headerlink" title="执行阶段耗时分析"></a>执行阶段耗时分析</h3><p>一个请求在openresty中被分为多个阶段进行处理，获取worker进程的单个请求在各个阶段的消耗时间，默认只输出该指令后去到的第一条请求的消耗时间，利用goreplay对流量进行过滤，发送具体的URL验证，可以测试摸个请求的阶段耗时，从而将性能问题快速定位到具体阶段的lua代码上。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> stapxx</span><br><span class="line">./samples/ngx-single-req-latency.sxx -x <span class="variable">$pid</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="http连接数和文件打开数分析"><a href="#http连接数和文件打开数分析" class="headerlink" title="http连接数和文件打开数分析"></a>http连接数和文件打开数分析</h3><p>分析worker进程的连接数量和文件打开数量，得知系统配置的资源是否可用，避免出现文件数或连接数不够用的情况。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> stapxx</span><br><span class="line">./samples/ngx-count-conns.sxx -x <span class="variable">$pid</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="正则表达式耗时分析"><a href="#正则表达式耗时分析" class="headerlink" title="正则表达式耗时分析"></a>正则表达式耗时分析</h3><p>大量的正则表达式路由，会增加请求响应耗时和cpu处理时间。可用stapxx内的工具分析正则的好事情况。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> stapxx</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PWD</span>:<span class="variable">$PATH</span></span><br><span class="line">./samples/ngx-pcre-dist.sxx -x <span class="variable">$pid</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="找出cpu资源消耗较多的指令"><a href="#找出cpu资源消耗较多的指令" class="headerlink" title="找出cpu资源消耗较多的指令"></a>找出cpu资源消耗较多的指令</h3><p>如果发现Nginx在CPU资源使用上消耗过多，可以利用luastacks.sxx进行分析，它可以获取在Nginx的worker进程中各项指令占用CPU资源的比例。</p>
+<p>如果是luajit2.1，执行下面的shell。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd stapxx</span><br><span class="line">export PATH=$PWD:$PATH</span><br><span class="line">./samples/lj-lua-stacks.sxx --arg time=5 --skip-badvars -x $pid</span><br></pre></td></tr></table></figure>
+
+<p>如果是luajit2.0或lua5.1，则用下面的shell。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd openresty-systemtap-toolkit</span><br><span class="line">./ngx-sample-lua-bt -p $pid --luajit20 -t 10</span><br></pre></td></tr></table></figure>
+
+<h3 id="找出抢占CPU进程的频率"><a href="#找出抢占CPU进程的频率" class="headerlink" title="找出抢占CPU进程的频率"></a>找出抢占CPU进程的频率</h3><p>通过下面的命令可以获取抢占指定PID进程的CPU频率，该命令也可以用来分析其他非Nginx的进程。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd stapxx</span><br><span class="line">export PATH=$PWD:$PATH</span><br><span class="line">./samples/cpu-robbers.sxx -x $Pid</span><br></pre></td></tr></table></figure>
+
+<h3 id="利用火焰图分析"><a href="#利用火焰图分析" class="headerlink" title="利用火焰图分析"></a>利用火焰图分析</h3><blockquote>
+<p>火焰图是由 <a href="https://en.wikipedia.org/wiki/Brendan_Gregg">Brendan Gregg</a> 发明的一种可视化方法，用于展示某一种系统资源或性能指标，是如何定量分布在目标软件里所有的代码路径上的。</p>
+</blockquote>
+<blockquote>
+<p>这里的“系统资源”或指标可以是 CPU 时间、off-CPU 时间、内存使用、硬盘使用、延时，或者任何其他你能想到的资源。</p>
+</blockquote>
+<blockquote>
+<p>而“代码路径”可以定义为目标软件代码中的调用栈轨迹。 调用栈轨迹通常是由一组函数调用帧组成的，通常出现在 GDB 命令 <code>bt</code> 的输出中，以及 Python 或 Java 程序的异常错误信息当中。</p>
+<p>传统的性能分析工具通常会给用户展示大量的细节信息和数据， 而用户很难看到全貌，反而容易去优化那些并不重要的地方，经常浪费大量时间和精力却看不到明显效果。传统分析器的另一个缺点是，它们通常会孤立地显示每个函数调用的延时，但很难看出各个函数调用的上下文，而且用户还须刻意区分当前函数本身运行的时间（exclusive time）和包括了其调用其他函数的时间在内的总时间（inclusive time）。</p>
+</blockquote>
+<blockquote>
+<p>火焰图可以把大量信息压缩到一个大小相对固定的图片当中（通常一屏就可以显示全）。 不怎么重要的代码路径会在图上自然地淡化乃至消失，而真正重要的代码路径则会自然地凸显出来。越重要的，则会显示得越明显。火焰图总是为用户提供最适当的信息量，不多，也不少。</p>
+</blockquote>
+<p>在获取性能数据时，同时进行压测。</p>
+<p>获取lua级别调用栈情况。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> stapxx</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PWD</span>:<span class="variable">$PATH</span></span><br><span class="line">./samples/lj-lua-stacks.sxx --arg time=5 --skip-badvars -x <span class="variable">$pid</span> &gt; /tmp/tmp.bt</span><br></pre></td></tr></table></figure>
+
+<p>处理输出。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> openresty-systemtap-toolkit</span><br><span class="line">./fix-lua-bt /tmp/tmp.bt &gt; /tmp/flame.bt</span><br></pre></td></tr></table></figure>
+
+<p>使用FlameGraph生成火焰图。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> FlameGrpah</span><br><span class="line">./stackcollapse-stap.pl /tmp/flame.bt &gt; /tmp/flame.cbt</span><br><span class="line">./flamegraph.pl /tmp/flame.cbt &gt; /tmp/flame.svg</span><br></pre></td></tr></table></figure>
+
+<p>火焰图分析，y轴表示调用栈的深度。顶部是正在执行的函数，下方是它的父函数，在y轴上的高度越高，表面调用的层次越深。</p>
+<p>水平的数轴即x轴，表示请求占用CPU资源的情况，在x轴上的宽度越宽，则表示请求的次数越多，占用耗时也就越长。</p>
+<p>如果最上面是“平顶”的样子，则可能存在性能问题，正常的火焰图呈现的效果应该有很多尖刺，而不应该是“平顶”。</p>
+<p>通过浏览器打开后，单击图中所示的CPU资源占比较高的位置，会看到具体是哪个函数执行的操作。</p>
+<h3 id="检查全局变量"><a href="#检查全局变量" class="headerlink" title="检查全局变量"></a>检查全局变量</h3><p>在Ngx_Lua中要避免使用全局变量，因为它会带来很多意想不到的麻烦，使用检查工具luacheck可以检查变量是全局变量还是局部变量。</p>
+<p>安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt install luarocks</span><br><span class="line">luarocks install luacheck</span><br></pre></td></tr></table></figure>
+
+<p>在Ngx_Lua中要避免使用全局变量，因为它会带来很多意想不到的麻烦，使用检查工具luacheck可以检查变量是全局变量还是局部变量。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">luacheck --std ngx_lua ./set_upserver.lua</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>middleware</category>
+      </categories>
+      <tags>
+        <tag>nginx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>prometheus</title>
+    <url>/2022/08/14/prometheus/</url>
+    <content><![CDATA[<h2 id="核心组件"><a href="#核心组件" class="headerlink" title="核心组件"></a>核心组件</h2><h3 id="prometheus-server"><a href="#prometheus-server" class="headerlink" title="prometheus server"></a>prometheus server</h3><p>prometheus server本质是时序数据库，主要提供指标的获取、存储、查询，指标的发现方式分为动态和静态两种，例如：动态可以从consul、k8s中发现监控对象<span id="more"></span> ，静态则可以主动更新配置文件提供job的exporter的确切地址。数据的查询和分析使用PromQL语言通过其内置UI实现。</p>
+<p>大规模监控下，prometheus基于其联邦集群能力可实现扩展。</p>
+<h3 id="Expoters"><a href="#Expoters" class="headerlink" title="Expoters"></a>Expoters</h3><p>数据采集的端点通过http服务暴露给prometheus server，prometheus通过expoter采集监控指标样本数据。</p>
+<p>cadvisor、etcd等exporter内置了用于向prometheus暴露监控数据的端点，可以<strong>直接采集</strong> 。若原有监控目标并不直接支持Prometheus，因此我们需要通过Prometheus提供的Client Library编写该监控目标的监控采集程序，即<strong>间接采集</strong>。</p>
+<h3 id="AlertManager"><a href="#AlertManager" class="headerlink" title="AlertManager"></a>AlertManager</h3><p>指标状态触发prometheus server的promql告警规则后，接收告警，路由给对应的接受组。</p>
+<h3 id="PushGateWay"><a href="#PushGateWay" class="headerlink" title="PushGateWay"></a>PushGateWay</h3><p>可以应对prometheus server到exporter网络不通的场景，此时exporter可以主动将指标数据push到gateway中，prometheus server 再从pushgateway中pull指标数据。</p>
+<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><ul>
+<li>丰富的client库，应用程序引入后，可以轻松监控应用内部状态</li>
+<li>可扩展</li>
+<li>监控数据以时间序列形式存在TSDB，时间序列以指标名称、时间戳、标签组成维一标识，可以方便地对监控数据进行聚合，过滤，裁剪</li>
+<li>promql强大</li>
+<li>可视化能力、集成容易、高效等</li>
+</ul>
+<h2 id="Promql"><a href="#Promql" class="headerlink" title="Promql"></a>Promql</h2><p>prometheus server采集的监控数据以时间序列存在内存数据库，定时持久化，时间序列主要有三部分：<strong>metric</strong>、<strong>timestamp</strong>、<strong>value</strong>。</p>
+<p><img src="/images/time-series.png"></p>
+<h3 id="Metric"><a href="#Metric" class="headerlink" title="Metric"></a>Metric</h3><h4 id="metric格式"><a href="#metric格式" class="headerlink" title="metric格式"></a>metric格式</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;metric name&gt;&#123;&lt;label name&gt;=&lt;label value&gt;, ...&#125;</span><br></pre></td></tr></table></figure>
+
+<p>metric name命名规则须符合正则表达式<code>[a-zA-Z_:][a-zA-Z0-9_:]*</code>。label反映样本特征维度，通过维度对样本数据进行过滤、聚合，label name命名规则须符合正则表达式<code>[a-zA-Z_][a-zA-Z0-9_]</code>。</p>
+<h4 id="metric类型"><a href="#metric类型" class="headerlink" title="metric类型"></a>metric类型</h4><h4 id="Counter"><a href="#Counter" class="headerlink" title="Counter"></a><strong>Counter</strong></h4><p>只增不减计数器，除非系统重置，例如：http_requests_total等指标。</p>
+<p>Gauge</p>
+<p>可增可减仪表盘，反映系统当前状态，例如:node_memory_Active_bytes 等指标。通过内置delata()函数，可以获取样本在一段时间内的变化情况。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">delta(node_memory_Active_bytes&#123;instance=&quot;172.17.0.1:9100&quot;, job=&quot;node&quot;&#125;[2h])</span><br></pre></td></tr></table></figure>
+
+<p>使用deriv()计算样本的线性回归模型，甚至是直接使用predict_linear()对数据的变化趋势进行预测。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">predict_linear(node_filesystem_avail_bytes&#123;mountpoint=&quot;/&quot;&#125;[30m],100 * 3600)</span><br></pre></td></tr></table></figure>
+
+<p>Histogram</p>
+<p>反映监控样本数据分布状况。Histogram指标直接反映了在不同区间内样本的个数，区间通过标签len进行定义。</p>
+<p>Summary</p>
+<p>反映数据分布状况，对于分位数计算，summary性能优于histogram，因为其在客户端完成分位数计算，而histogram通过在服务端histogram_quantile()函数计算其值。</p>
+<h4 id="查询时间序列"><a href="#查询时间序列" class="headerlink" title="查询时间序列"></a>查询时间序列</h4><p>查询指标下的所有时间序列，直接使用指标名称</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">node_cpu_seconds_total</span><br><span class="line">node_cpu_seconds_total&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间序列过滤，标签匹配：完全匹配、正则匹配</p>
+<p>完全匹配 label &#x3D; value 和 label !&#x3D; value</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;</span><br><span class="line">node_cpu_seconds_total&#123;mode!=&quot;iowait&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正则匹配 label &#x3D;~ regex 和 label !~ regex</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">node_cpu_seconds_total&#123;mode=~&quot;id.*&quot;&#125;</span><br><span class="line">node_cpu_seconds_total&#123;mode=~&quot;id.*|io.*&quot;&#125;</span><br><span class="line">node_cpu_seconds_total&#123;mode!~&quot;id.*|io.*&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上所有查询返回值中只会包含该时间序列中的最新的一个样本值，即瞬时向量。</p>
+<p>查询一段时间范围内的样本数据时，则需要使用<strong>区间向量表达式</strong>，通过[ ]定义查询时间范围，查询结果即<strong>区间向量</strong>。</p>
+<p>时间单位有：s - 秒、m - 分钟、h - 小时、d - 天、w - 周、y - 年。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">node_cpu_seconds_total&#123;mode=~&quot;id.*&quot;&#125;[1m]</span><br></pre></td></tr></table></figure>
+
+<p>使用offset时间位移操作，查询1m中前的瞬时数据或查询前一分钟的一分钟内的区间数据。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">node_cpu_seconds_total&#123;mode=~&quot;id.*&quot;&#125; offset 1m </span><br><span class="line">node_cpu_seconds_total&#123;mode=~&quot;id.*&quot;&#125;[1m] offset 1m </span><br></pre></td></tr></table></figure>
+
+<h4 id="聚合操作"><a href="#聚合操作" class="headerlink" title="聚合操作"></a>聚合操作</h4><p>通过promql聚合操作处理多条时间序列生成一条新的时间序列。</p>
+<p>聚合操作：<code>sum</code> (求和)、<code>min</code> (最小值)、<code>max</code> (最大值)、<code>avg</code> (平均值)、<code>stddev</code> (标准差)、<code>stdvar</code> (标准方差)、<code>count</code> (计数)、<code>count_values</code> (对value进行计数)、<code>bottomk</code> (后n条时序)、<code>topk</code> (前n条时序)、<code>quantile</code> (分位数)。</p>
+<p>聚合操作语法:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;aggr-op&gt;([parameter,] &lt;vector expression&gt;) [without|by (&lt;label list&gt;)]</span><br></pre></td></tr></table></figure>
+
+<p>只有<code>count_values</code>, <code>quantile</code>, <code>topk</code>, <code>bottomk</code>支持参数(parameter)。</p>
+<p>count_values用于时间序列中每一个样本值出现的次数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">count_values(&quot;count&quot;, prometheus_http_requests_total)</span><br></pre></td></tr></table></figure>
+
+<p>topk和bottomk则用于对样本值进行排序，返回当前样本值前n位，或者后n位的时间序列。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">topk(5,prometheus_http_requests_total)</span><br><span class="line">bottomk(5,prometheus_http_requests_total)</span><br></pre></td></tr></table></figure>
+
+<p>quantile用于计算当前样本数据值的分布情况quantile(φ, express)其中0 ≤ φ ≤ 1。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">quantile(0.2,prometheus_http_requests_total)</span><br></pre></td></tr></table></figure>
+
+<p>without移除列举标签，by只保留列举标签。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sum(node_cpu_seconds_total)</span><br><span class="line">avg(node_cpu_seconds_total) by (mode)</span><br></pre></td></tr></table></figure>
+
+<p>标量（Scalar）：一个浮点型的数字值</p>
+<p>字符串（String）：一个简单的字符串值</p>
+<h4 id="内置函数"><a href="#内置函数" class="headerlink" title="内置函数"></a>内置函数</h4><p>计算counter指标的增长率,计算cpu一分钟内平均增长率。</p>
+<p>increase计算区间内的增长量，&#x3D; 区间向量 last value -  区间向量first value</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">increase(node_cpu_seconds_total[1m]) / 60</span><br></pre></td></tr></table></figure>
+
+<p>rate计算时间窗口内的平均增长速率</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">rate(node_cpu_seconds_total[2m])</span><br></pre></td></tr></table></figure>
+
+<p>irate</p>
+<blockquote>
+<p>irate同样用于计算区间向量的计算率，但是其反应出的是瞬时增长率。irate函数是通过区间向量中最后两个样本数据来计算区间向量的增长速率。这种方式可以避免在时间窗口范围内的“长尾问题”，并且体现出更好的灵敏度，通过irate函数绘制的图标能够更好的反应样本数据的瞬时变化状态。</p>
+<p>irate函数相比于rate函数提供了更高的灵敏度，不过当需要分析长期趋势或者在告警规则中，irate的这种灵敏度反而容易造成干扰。因此在长期趋势分析或者告警中更推荐使用rate函数。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">irate(node_cpu_seconds_total[2m])</span><br></pre></td></tr></table></figure>
+
+<p>预测Gauge变化趋势</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">predict_linear(node_filesystem_avail_bytes&#123;mountpoint=&quot;/&quot;&#125;[30m],100 * 3600)</span><br></pre></td></tr></table></figure>
+
+<p>动态标签替换</p>
+<p>label_replace,函数会依次对v中的每一条时间序列进行处理，通过regex匹配src_label的值，并将匹配部分relacement写入到dst_label标签中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">label_replace(v instant-vector, dst_label string, replacement string, src_label string, regex string)</span><br><span class="line">label_replace(node_cpu_seconds_total,&quot;type&quot;,&quot;$1&quot;,&quot;mode&quot;,&quot;(.*)&quot;) </span><br></pre></td></tr></table></figure>
+
+<p>label_join，函数可以将时间序列中v多个标签src_label的值，通过separator作为连接符写入到一个新的标签dst_label中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">label_join(v instant-vector, dst_label string, separator string, src_label_1 string, src_label_2 string, ...)</span><br><span class="line">label_join(node_cpu_seconds_total,&quot;type&quot;,&quot;-&quot;,&quot;mode&quot;,&quot;cpu&quot;) </span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>CNCF</category>
+      </categories>
+      <tags>
+        <tag>monitor</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>云资源监控</title>
+    <url>/2022/10/19/%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[<h1 id="云资源监控"><a href="#云资源监控" class="headerlink" title="云资源监控"></a>云资源监控</h1><h2 id="CloudWatch"><a href="#CloudWatch" class="headerlink" title="CloudWatch"></a>CloudWatch</h2><p><img src="https://docs.aws.amazon.com/zh_cn/AmazonCloudWatch/latest/monitoring/images/CW-Overview.png" alt="img"></p>
+<h3 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h3><span id="more"></span> 
+
+
+<p><img src="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/images/rds-cloudwatch.png" alt="img"></p>
+<p>Amazon RDS 向 Amazon CloudWatch 发布以下类型的指标：</p>
+<ul>
+<li>RDS 数据库实例的指标</li>
+<li>Performance Insights 指标</li>
+<li>增强监控指标（发布到 Amazon CloudWatch Logs）</li>
+<li>Amazon RDS 服务配额的用量指标</li>
+</ul>
+<h4 id="查看Cloudwatch指标"><a href="#查看Cloudwatch指标" class="headerlink" title="查看Cloudwatch指标"></a>查看Cloudwatch指标</h4><p>列出<code>AWS/RDS</code> 命名空间中的所有指标</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws cloudwatch list-metrics --namespace AWS/RDS</span><br></pre></td></tr></table></figure>
+
+<p>获取 <code>my-instance</code> 在特定 24 小时时段内的 <code>CPUUtilization</code> 统计数据</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws cloudwatch get-metric-statistics --namespace AWS/RDS \</span><br><span class="line">     --metric-name CPUUtilization \</span><br><span class="line">     --start-time 2021-12-15T00:00:00Z \</span><br><span class="line">     --end-time 2021-12-16T00:00:00Z \</span><br><span class="line">     --period 360 \</span><br><span class="line">     --statistics Minimum \</span><br><span class="line">     --dimensions Name=DBInstanceIdentifier,Value=my-instance</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建-CloudWatch-警报"><a href="#创建-CloudWatch-警报" class="headerlink" title="创建 CloudWatch 警报"></a>创建 CloudWatch 警报</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws cloudwatch put-metric-alarm \</span><br><span class="line">		--alarm-name cpu-mon \</span><br><span class="line">		--alarm-description &quot;Alarm when CPU exceeds 70 percent&quot; \</span><br><span class="line">		--metric-name CPUUtilization \</span><br><span class="line">		--namespace AWS/EC2 \</span><br><span class="line">		--statistic Average \</span><br><span class="line">		--period 300 \</span><br><span class="line">		--threshold 70 \</span><br><span class="line">		--comparison-operator GreaterThanThreshold \</span><br><span class="line">		--dimensions &quot;Name=InstanceId,Value=i-12345678&quot; \</span><br><span class="line">		--evaluation-periods 2 \</span><br><span class="line">		--alarm-actions arn:aws:sns:us-east-1:111122223333:MyTopic </span><br><span class="line">		--unit Percent</span><br></pre></td></tr></table></figure>
+
+<h4 id="Amazon-RDS-上的-Performance-Insights"><a href="#Amazon-RDS-上的-Performance-Insights" class="headerlink" title="Amazon RDS 上的 Performance Insights"></a>Amazon RDS 上的 Performance Insights</h4><p>利用 Performance Insights 控制面板，您可以可视化 Amazon RDS 数据库实例负载上的数据库负载，并按等待状态、SQL 语句、主机或用户来筛选负载。</p>
+<h5 id="打开和关闭-Performance-Insights"><a href="#打开和关闭-Performance-Insights" class="headerlink" title="打开和关闭 Performance Insights"></a>打开和关闭 Performance Insights</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier sample-db-instance \</span><br><span class="line">    --enable-performance-insights \</span><br><span class="line">    --performance-insights-retention-period 7</span><br></pre></td></tr></table></figure>
+
+<p>可以指定 <code>7</code>、<code>month</code> * 31（其中 <code>month</code> 为 1–23 之间的数字）或 <code>731</code>。例如，如果您想将性能数据保留 3 个月，请指定 <code>93</code>，也就是 3 * 31。原定设置值为 <code>7</code> 天。有关保留期的更多信息，请参阅<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.cost.html">性能详情的定价和数据留存</a>。</p>
+<h4 id="增强监控来监控操作系统"><a href="#增强监控来监控操作系统" class="headerlink" title="增强监控来监控操作系统"></a>增强监控来监控操作系统</h4><p>Amazon RDS 为数据库实例运行的操作系统 (OS) 实时提供指标。您可以在控制台上查看 RDS 数据库实例的所有系统指标和过程信息。</p>
+<p><strong>成本：</strong></p>
+<p>增强监测指标存储在 CloudWatch Logs 中，而不是存储在 CloudWatch 指标中。</p>
+<ul>
+<li>根据 CloudWatch Logs 数据传输和存储费率计算的</li>
+<li>增强型监测功能定义的精细程度越高，成本越大</li>
+<li>实例越多越大</li>
+<li>支持的工作负载计算密集程度</li>
+</ul>
+<p><strong>设置和启用增强监控</strong></p>
+<h6 id="为增强监控创建-IAM-角色"><a href="#为增强监控创建-IAM-角色" class="headerlink" title="为增强监控创建 IAM 角色"></a>为增强监控创建 IAM 角色</h6><p>增强监测需要代表您执行操作的权限来向 CloudWatch Logs发送操作系统指标信息。</p>
+<ol>
+<li><p>通过以下网址打开 <a href="https://console.aws.amazon.com/iam/home#home">IAM 控制台</a>：<a href="https://console.aws.amazon.com/">https://console.aws.amazon.com</a>。</p>
+</li>
+<li><p>在导航窗格中，选择 **Roles (角色)**。</p>
+</li>
+<li><p>选择 <strong>Create role</strong>（创建角色）。</p>
+</li>
+<li><p>选择 <strong>AWS service</strong>（Amazon Web Services 服务）选项卡，然后从服务列表中选择 <strong>RDS</strong>。</p>
+</li>
+<li><p>选择 <strong>RDS - Enhanced Monitoring</strong>（RDS - 增强监测），然后选择 <strong>Next</strong>（下一步）。</p>
+</li>
+<li><p>确保 <strong>Permissions policies</strong>（权限策略）显示 <strong>AmazonRDSEnhancedMonitoringRole</strong>，然后选择 <strong>Next</strong>（下一步）。</p>
+</li>
+<li><p>对于 **Role name (角色名称)**，为您的角色输入一个名称。例如，输入 <code>emaccess</code>。</p>
+<p>您角色的可信实体是 AWS 服务 <strong>monitoring.rds.amazonaws.com</strong>。</p>
+</li>
+<li><p>选择 <strong>Create role</strong>（创建角色）。</p>
+</li>
+</ol>
+<h6 id="打开数据库实例的增强监控"><a href="#打开数据库实例的增强监控" class="headerlink" title="打开数据库实例的增强监控"></a>打开数据库实例的增强监控</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier mydbinstance \</span><br><span class="line">    --monitoring-interval 30 \</span><br><span class="line">    --monitoring-role-arn arn:aws:iam::123456789012:role/emaccess</span><br></pre></td></tr></table></figure>
+
+<h6 id="打开多可用区数据库集群的增强监控"><a href="#打开多可用区数据库集群的增强监控" class="headerlink" title="打开多可用区数据库集群的增强监控"></a>打开多可用区数据库集群的增强监控</h6><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws rds modify-db-cluster \</span><br><span class="line">    --db-cluster-identifier mydbcluster \</span><br><span class="line">    --monitoring-interval 30 \</span><br><span class="line">    --monitoring-role-arn arn:aws:iam::123456789012:role/emaccess</span><br></pre></td></tr></table></figure>
+
+<h3 id="RDS指标"><a href="#RDS指标" class="headerlink" title="RDS指标"></a>RDS指标</h3><h4 id="RDS-的-Amazon-CloudWatch-指标"><a href="#RDS-的-Amazon-CloudWatch-指标" class="headerlink" title="RDS 的 Amazon CloudWatch 指标"></a>RDS 的 Amazon CloudWatch 指标</h4><table>
+<thead>
+<tr>
+<th><code>BinLogDiskUsage</code></th>
+<th><strong>二进制日志磁盘使用情况 (MB)</strong></th>
+<th>二进制日志所占的磁盘空间大小。如果为 MySQL 和 MariaDB 实例（包括只读副本）启用了自动备份，则会创建二进制日志。</th>
+<th>字节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BurstBalance</code></td>
+<td><strong>突发余额（百分比）</strong></td>
+<td>可用的通用型 SSD (GP2) 突增存储桶 I&#x2F;O 点数的百分比。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>CheckpointLag</code></td>
+<td><strong>检查点滞后（毫秒）</strong></td>
+<td>自最近一次检查点以来的时间。仅适用于 RDS for PostgreSQL。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ConnectionAttempts</code></td>
+<td><strong>Connection Attempts (Count)</strong> [连接尝试（计数）]</td>
+<td>尝试连接实例的次数，无论成功与否。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>CPUUtilization</code></td>
+<td><strong>CPU 利用率（百分比）</strong></td>
+<td>CPU 使用百分率。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>CPUCreditUsage</code></td>
+<td><strong>CPU 额度使用（计数）</strong></td>
+<td>（T2 实例）实例为保持 CPU 使用率而花费的 CPU 积分数。一个 CPU 积分等于一个 vCPU 以 100% 的使用率运行一分钟或等同的 vCPU、使用率与时间的组合。例如，您可以有一个 vCPU 按 50% 使用率运行两分钟，或者两个 vCPU 按 25% 使用率运行两分钟。CPU 积分指标仅每 5 分钟提供一次。如果您指定一个大于五分钟的时间段，请使用<code>Sum</code> 统计数据，而非 <code>Average</code> 统计数据。</td>
+<td>积分 (vCPU 分钟)</td>
+</tr>
+<tr>
+<td><code>CPUCreditBalance</code></td>
+<td><strong>CPU 额度余额（计数）</strong></td>
+<td>（T2 实例）实例自启动后已累积获得的 CPU 积分数。对于 T2 标准，<code>CPUCreditBalance</code> 还包含已累积的启动积分数。在获得积分后，积分将在积分余额中累积；在花费积分后，将从积分余额中扣除积分。积分余额具有最大值限制，这是由实例大小决定的。在达到限制后，将丢弃获得的任何新积分。对于 T2 标准，启动积分不计入限制。实例可以花费 <code>CPUCreditBalance</code> 中的积分，以便突增到基准 CPU 使用率以上。在实例运行过程中，<code>CPUCreditBalance</code> 中的积分不会过期。在实例停止时，<code>CPUCreditBalance</code> 不会保留，并且所有累积的积分都将丢失。CPU 积分指标仅每 5 分钟提供一次。启动积分在 Amazon RDS 中的作用方式与在 Amazon EC2 中的作用方式相同。有关更多信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances-standard-mode-concepts.html#launch-credits">适用于 Linux 实例的 Amazon Elastic Compute Cloud 用户指南</a>中的<em>启动积分</em>。</td>
+<td>积分（vCPU 分钟）</td>
+</tr>
+<tr>
+<td><code>DatabaseConnections</code></td>
+<td><strong>数据库连接（计数）</strong></td>
+<td>连接至数据库实例的客户端网络连接数。数据库会话数可能高于指标值，因为指标值不包括以下内容：不再具有网络连接但数据库尚未清理的会话数据库引擎出于自身目的创建的会话由数据库引擎的并行执行功能创建的会话由数据库引擎任务计划程序创建的会话Amazon RDS 连接</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>DiskQueueDepth</code></td>
+<td><strong>队列深度（计数）</strong></td>
+<td>等待访问磁盘的未完成 I&#x2F;O（读取&#x2F;写入请求）的数量。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>EBSByteBalance%</code></td>
+<td><strong>EBS 字节余额（百分比）</strong></td>
+<td>RDS 数据库突增存储桶中剩余的吞吐量积分的百分比 此指标仅对基本监控可用。该指标值基于包括根卷在内的所有卷的吞吐量和 IOPS，而不是仅基于那些包含数据库文件的卷。要查找支持此指标的实例大小，请参阅 <em>Amazon EC2 用户指南（适用于 Linux 实例）</em> 中<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html#current">默认优化的 EBS 表</a>中带星号 (*) 的实例大小。<code>Sum</code> 统计数据不适用于该指标。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>EBSIOBalance%</code></td>
+<td><strong>EBS IO 余额（百分比）</strong></td>
+<td>RDS 数据库突增存储桶中剩余的 I&#x2F;O 积分的百分比 此指标仅对基本监控可用。该指标值基于包括根卷在内的所有卷的吞吐量和 IOPS，而不是仅基于那些包含数据库文件的卷。要查找支持此指标的实例大小，请参阅 <em>Amazon EC2 用户指南（适用于 Linux 实例）</em> 中<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html#current">默认优化的 EBS 表</a>中带星号 (*) 的实例大小。<code>Sum</code> 统计数据不适用于该指标。这个指标不同于 <code>BurstBalance</code>。要了解如何使用此指标，请参阅<a href="http://aws.amazon.com/blogs/compute/improving-application-performance-and-reducing-costs-with-amazon-ebs-optimized-instance-burst-capability/">利用 Amazon EBS 优化型实例突发功能提升应用程序性能并降低成本</a>。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>FailedSQLServerAgentJobsCount</code></td>
+<td><strong>Failed SQL Server Agent Jobs Count (Count&#x2F;Minute) (失败的 SQL Server Agent 作业计数（计数&#x2F;分钟）)</strong></td>
+<td>过去 1 分钟内失败的 Microsoft SQL Server Agent 作业的数量。</td>
+<td>计数&#x2F;分钟</td>
+</tr>
+<tr>
+<td><code>FreeableMemory</code></td>
+<td><strong>可用内存 (MB)</strong></td>
+<td>随机存取内存的可用大小。对于 MariaDB、MySQL、Oracle 和 PostgreSQL 数据库实例，此指标报告 <code>MemAvailable</code> 的 <code>/proc/meminfo</code> 字段的值。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>FreeLocalStorage</code></td>
+<td>**Free Local Storage (MB)**（可用本地存储 (MB)）</td>
+<td>可用本地存储空间的大小。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。（这不适用于 Aurora Serverless v2。）</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>FreeStorageSpace</code></td>
+<td><strong>可用存储空间 (MB)</strong></td>
+<td>可用存储空间的大小。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>MaximumUsedTransactionIDs</code></td>
+<td><strong>最大已用事务 ID（计数）</strong></td>
+<td>已使用的最大事务 ID。仅适用于 PostgreSQL。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>NetworkReceiveThroughput</code></td>
+<td><strong>网络接收吞吐量（MB&#x2F;秒）</strong></td>
+<td>数据库实例的传入（接收）网络流量，包括用于监控和复制的客户数据库流量和 Amazon RDS 流量。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>NetworkTransmitThroughput</code></td>
+<td><strong>网络传输吞吐量（MB&#x2F;秒）</strong></td>
+<td>数据库实例的传出（传输）网络流量，包括用于监控和复制的客户数据库流量和 Amazon RDS 流量。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>OldestReplicationSlotLag</code></td>
+<td><strong>最早副本槽滞后 (MB)</strong></td>
+<td>在接收预写日志 (WAL) 数据方面最滞后的副本的滞后大小。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>ReadIOPS</code></td>
+<td><strong>读取 IOPS（计数&#x2F;秒）</strong></td>
+<td>每秒平均磁盘读取 I&#x2F;O 操作数。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadIOPSLocalStorage</code></td>
+<td>**Read IOPS Local Storage (Count&#x2F;Second)**（读取 IOPS 本地存储（计数&#x2F;秒））</td>
+<td>每秒至本地存储的平均磁盘读取输入&#x2F;输出操作数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadLatency</code></td>
+<td><strong>读取延迟（毫秒）</strong></td>
+<td>每个磁盘 I&#x2F;O 操作所需的平均时间。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReadLatencyLocalStorage</code></td>
+<td>**Read Latency Local Storage (Milliseconds)**（读取延迟本地存储（毫秒））</td>
+<td>每个磁盘对本地存储输入&#x2F;输出操作所需的平均时间。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReadThroughput</code></td>
+<td><strong>读取吞吐量（MB&#x2F;秒）</strong></td>
+<td>每秒从磁盘读取的平均字节数。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadThroughputLocalStorage</code></td>
+<td>**Read Throughput Local Storage (MB&#x2F;Second)**（读取吞吐量本地存储（MB&#x2F;秒））</td>
+<td>每秒从磁盘至本地存储读取的平均字节数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReplicaLag</code></td>
+<td><strong>副本滞后（毫秒）</strong></td>
+<td>对于只读副本配置，只读副本数据库实例滞后于源数据库实例的时间量。适用于 MariaDB、Microsoft SQL Server、MySQL、Oracle 和 PostgreSQL 只读副本。对于多可用区数据库集群，写入器数据库实例上的最新事务与读取器数据库实例上的最新应用事务之间的时间差异。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReplicationSlotDiskUsage</code></td>
+<td><strong>副本插槽磁盘使用情况 (MB)</strong></td>
+<td>副本槽文件使用的磁盘空间。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>SwapUsage</code></td>
+<td><strong>交换区使用情况 (MB)</strong></td>
+<td>数据库实例上使用的交换空间的大小。此指标对于 SQL Server 不可用。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>TransactionLogsDiskUsage</code></td>
+<td><strong>事务日志磁盘使用情况 (MB)</strong></td>
+<td>事务日志使用的磁盘空间。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>TransactionLogsGeneration</code></td>
+<td><strong>事务日志生成（MB&#x2F;秒）</strong></td>
+<td>每秒生成的事务日志的大小。适用于 PostgreSQL。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>WriteIOPS</code></td>
+<td><strong>写入 IOPS (计数&#x2F;秒)</strong></td>
+<td>每秒平均磁盘写入 I&#x2F;O 操作数。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteIOPSLocalStorage</code></td>
+<td>**Write IOPS Local Storage (Count&#x2F;Second)**（写入 IOPS 本地存储（计数&#x2F;秒））</td>
+<td>本地存储上的每秒平均磁盘写入 I&#x2F;O 操作数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteLatency</code></td>
+<td><strong>写入延迟（毫秒）</strong></td>
+<td>每个磁盘 I&#x2F;O 操作所需的平均时间。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>WriteLatencyLocalStorage</code></td>
+<td>**Write Latency Local Storage (Milliseconds)**（写入延迟本地存储（毫秒））</td>
+<td>本地存储上每个磁盘 I&#x2F;O 操作所需的平均时间。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>毫秒</td>
+</tr>
+<tr>
+<td><code>WriteThroughput</code></td>
+<td><strong>写入吞吐量（MB&#x2F;秒）</strong></td>
+<td>每秒写入磁盘的平均字节数。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteThroughputLocalStorage</code></td>
+<td>**Write Throughput Local Storage (MB&#x2F;Second)**（写入吞吐量本地存储（MB&#x2F;秒））</td>
+<td>本地存储每秒写入磁盘的平均字节数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+</tbody></table>
+<h4 id="RDS-的-Amazon-CloudWatch-维度"><a href="#RDS-的-Amazon-CloudWatch-维度" class="headerlink" title="RDS 的 Amazon CloudWatch 维度"></a>RDS 的 Amazon CloudWatch 维度</h4><p>可以使用下表中的任何维度筛选 Amazon RDS 指标数据。</p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">筛选为 . . 请求的数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>DBInstanceIdentifier</code></td>
+<td align="left">特定的数据库实例。</td>
+</tr>
+<tr>
+<td align="left"><code>DatabaseClass</code></td>
+<td align="left">数据库类中的所有实例。例如，您可以聚合属于数据库类 <code>db.r5.large</code> 的所有实例的指标。</td>
+</tr>
+<tr>
+<td align="left"><code>EngineName</code></td>
+<td align="left">仅标识的引擎名称。例如，您可以聚合具有引擎名称 <code>postgres</code> 的所有实例的指标。</td>
+</tr>
+<tr>
+<td align="left"><code>SourceRegion</code></td>
+<td align="left">仅指定区域。例如，您可以聚合 <code>us-east-1</code> 区域中的所有数据库实例的指标。</td>
+</tr>
+</tbody></table>
+<h4 id="Performance-Insights-的-Amazon-CloudWatch-指标"><a href="#Performance-Insights-的-Amazon-CloudWatch-指标" class="headerlink" title="Performance Insights 的 Amazon CloudWatch 指标"></a>Performance Insights 的 Amazon CloudWatch 指标</h4><p>可以从 Performance Insights 查询相同的数据，但具有 CloudWatch 中的指标可以轻松地添加 CloudWatch 警报。</p>
+<table>
+<thead>
+<tr>
+<th align="left">指标</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">DBLoad</td>
+<td align="left">数据库引擎的活动会话的数量。通常，您需要活动会话的平均数量数据。在 Performance Insights 中，作为 <code>db.load.avg</code> 查询此数据。</td>
+</tr>
+<tr>
+<td align="left">DBLoadCPU</td>
+<td align="left">等待事件类型为 CPU 的活动会话的数量。在 Performance Insights 中，作为 <code>db.load.avg</code> 查询此数据，按等待事件类型 <code>CPU</code> 进行筛选。</td>
+</tr>
+<tr>
+<td align="left">DBLoadNonCPU</td>
+<td align="left">等待事件类型不为 CPU 的活动会话的数量。</td>
+</tr>
+</tbody></table>
+<p>查看指标</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">aws cloudwatch get-metric-statistics \</span><br><span class="line">    --region us-west-2 \</span><br><span class="line">    --namespace AWS/RDS \</span><br><span class="line">    --metric-name DBLoad  \</span><br><span class="line">    --period 60 \</span><br><span class="line">    --statistics Average \</span><br><span class="line">    --start-time 1532035185 \</span><br><span class="line">    --end-time 1532036185 \</span><br><span class="line">    --dimensions Name=DBInstanceIdentifier,Value=db-loadtest-0</span><br></pre></td></tr></table></figure>
+
+<h4 id="Performance-Insights-计数器指标"><a href="#Performance-Insights-计数器指标" class="headerlink" title="Performance Insights 计数器指标"></a>Performance Insights 计数器指标</h4><p>计数器指标是 Performance Insights 控制面板中的操作系统和数据库性能指标。为帮助确定和分析性能问题，您可将计数器指标与数据库负载相关联。</p>
+<h6 id="RDS-for-MariaDB-和-RDS-for-MySQL-的本机计数器"><a href="#RDS-for-MariaDB-和-RDS-for-MySQL-的本机计数器" class="headerlink" title="RDS for MariaDB 和 RDS for MySQL 的本机计数器"></a>RDS for MariaDB 和 RDS for MySQL 的本机计数器</h6><p>本机指标由数据库引擎定义，而不是由 Amazon RDS 定义。有关这些原生指标的定义，请参阅 MySQL 文档中的<a href="https://dev.mysql.com/doc/refman/5.6/en/server-status-variables.html">服务器状态变量</a>。</p>
+<table>
+<thead>
+<tr>
+<th align="left">计数器</th>
+<th align="left">类型</th>
+<th align="left">单位</th>
+<th align="left">指标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Com_analyze</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_analyze</td>
+</tr>
+<tr>
+<td align="left">Com_optimize</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_optimize</td>
+</tr>
+<tr>
+<td align="left">Com_select</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_select</td>
+</tr>
+<tr>
+<td align="left">连接</td>
+<td align="left">SQL</td>
+<td align="left">每分钟尝试连接到 MySQL 服务器的次数（无论成功与否）</td>
+<td align="left">db.Users.Connections</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_deleted</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_deleted</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_inserted</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_inserted</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_read</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_read</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_updated</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_updated</td>
+</tr>
+<tr>
+<td align="left">Select_full_join</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_full_join</td>
+</tr>
+<tr>
+<td align="left">Select_full_range_join</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_full_range_join</td>
+</tr>
+<tr>
+<td align="left">Select_range</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_range</td>
+</tr>
+<tr>
+<td align="left">Select_range_check</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_range_check</td>
+</tr>
+<tr>
+<td align="left">Select_scan</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_scan</td>
+</tr>
+<tr>
+<td align="left">Slow_queries</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Slow_queries</td>
+</tr>
+<tr>
+<td align="left">Sort_merge_passes</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_merge_passes</td>
+</tr>
+<tr>
+<td align="left">Sort_range</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_range</td>
+</tr>
+<tr>
+<td align="left">Sort_rows</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_rows</td>
+</tr>
+<tr>
+<td align="left">Sort_scan</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_scan</td>
+</tr>
+<tr>
+<td align="left">问题</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Questions</td>
+</tr>
+<tr>
+<td align="left">Innodb_row_lock_time</td>
+<td align="left">锁</td>
+<td align="left">毫秒数（平均值）</td>
+<td align="left">db.Locks.Innodb_row_lock_time</td>
+</tr>
+<tr>
+<td align="left">Table_locks_immediate</td>
+<td align="left">锁</td>
+<td align="left">每秒请求数</td>
+<td align="left">db.Locks.Table_locks_immediate</td>
+</tr>
+<tr>
+<td align="left">Table_locks_waited</td>
+<td align="left">锁</td>
+<td align="left">每秒请求数</td>
+<td align="left">db.Locks.Table_locks_waited</td>
+</tr>
+<tr>
+<td align="left">Aborted_clients</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Aborted_clients</td>
+</tr>
+<tr>
+<td align="left">Aborted_connects</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Aborted_connects</td>
+</tr>
+<tr>
+<td align="left">Threads_created</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Threads_created</td>
+</tr>
+<tr>
+<td align="left">Threads_running</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Threads_running</td>
+</tr>
+<tr>
+<td align="left">Innodb_data_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_data_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_dblwr_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_dblwr_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_log_write_requests</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_log_write_requests</td>
+</tr>
+<tr>
+<td align="left">Innodb_log_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_log_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_pages_written</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒页数</td>
+<td align="left">db.IO.Innodb_pages_written</td>
+</tr>
+<tr>
+<td align="left">Created_tmp_disk_tables</td>
+<td align="left">临时文件</td>
+<td align="left">每秒表数</td>
+<td align="left">db.Temp.Created_tmp_disk_tables</td>
+</tr>
+<tr>
+<td align="left">Created_tmp_tables</td>
+<td align="left">临时文件</td>
+<td align="left">每秒表数</td>
+<td align="left">db.Temp.Created_tmp_tables</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_pages_data</td>
+<td align="left">缓存</td>
+<td align="left">页面</td>
+<td align="left">db.Cache.Innodb_buffer_pool_pages_data</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_pages_total</td>
+<td align="left">缓存</td>
+<td align="left">页面</td>
+<td align="left">db.Cache.Innodb_buffer_pool_pages_total</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_read_requests</td>
+<td align="left">缓存</td>
+<td align="left">每秒页数</td>
+<td align="left">db.Cache.Innodb_buffer_pool_read_requests</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_reads</td>
+<td align="left">缓存</td>
+<td align="left">每秒页数</td>
+<td align="left">db.Cache.Innodb_buffer_pool_reads</td>
+</tr>
+<tr>
+<td align="left">Opened_tables</td>
+<td align="left">缓存</td>
+<td align="left">表</td>
+<td align="left">db.Cache.Opened_tables</td>
+</tr>
+<tr>
+<td align="left">Opened_table_definitions</td>
+<td align="left">缓存</td>
+<td align="left">表</td>
+<td align="left">db.Cache.Opened_table_definitions</td>
+</tr>
+<tr>
+<td align="left">Qcache_hits</td>
+<td align="left">缓存</td>
+<td align="left">查询</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<h6 id="适用于-Amazon-RDS-for-MariaDB-和-RDS-for-MySQL-的非本机计数器"><a href="#适用于-Amazon-RDS-for-MariaDB-和-RDS-for-MySQL-的非本机计数器" class="headerlink" title="适用于 Amazon RDS for MariaDB 和 RDS for MySQL 的非本机计数器"></a>适用于 Amazon RDS for MariaDB 和 RDS for MySQL 的非本机计数器</h6><p>非本机计数器指标是 Amazon RDS 定义的计数器。非本机指标可以是您使用特定查询获取的指标。非本机指标还可以是派生指标，使用两个或更多个本机计数器来计算比率、命中率或延迟。</p>
+<table>
+<thead>
+<tr>
+<th>innodb_buffer_pool_hits</th>
+<th>缓存</th>
+<th>db.Cache.innoDB_buffer_pool_hits</th>
+<th>InnoDB 可满足的缓冲池中的读取数。</th>
+<th><code>innodb_buffer_pool_read_requests - innodb_buffer_pool_reads</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>innodb_buffer_pool_hit_rate</td>
+<td>缓存</td>
+<td>db.Cache.innoDB_buffer_pool_hit_rate</td>
+<td>InnoDB 可满足的缓冲池中的读取百分比。</td>
+<td><code>100 * innodb_buffer_pool_read_requests / (innodb_buffer_pool_read_requests + innodb_buffer_pool_reads)</code></td>
+</tr>
+<tr>
+<td>innodb_buffer_pool_usage</td>
+<td>缓存</td>
+<td>db.Cache.innoDB_buffer_pool_usage</td>
+<td>包含数据（页面）的 InnoDB 缓冲池的百分比。<strong>注意</strong>在使用压缩表时，此值可改变。有关更多信息，请参阅 MySQL 文档中的<a href="https://dev.mysql.com/doc/refman/5.6/en/server-status-variables.html">服务器状态变量</a>中有关 <code>Innodb_buffer_pool_pages_data</code> 和 <code>Innodb_buffer_pool_pages_total</code> 的信息。</td>
+<td><code>Innodb_buffer_pool_pages_data / Innodb_buffer_pool_pages_total * 100.0</code></td>
+</tr>
+<tr>
+<td>query_cache_hit_rate</td>
+<td>缓存</td>
+<td>db.Cache.query_cache_hit_rate</td>
+<td>MySQL 结果集缓存（查询缓存）命中率。</td>
+<td><code>Qcache_hits / (QCache_hits + Com_select) * 100</code></td>
+</tr>
+<tr>
+<td>innodb_datafile_writes_to_disk</td>
+<td>I&#x2F;O</td>
+<td>db.IO.innoDB_datafile_writes_to_disk</td>
+<td>InnoDB 数据文件写入磁盘的操作数，不包括两次写和重做日志记录写入操作。</td>
+<td><code>Innodb_data_writes - Innodb_log_writes - Innodb_dblwr_writes</code></td>
+</tr>
+<tr>
+<td>innodb_rows_changed</td>
+<td>SQL</td>
+<td>db.SQL.innodb_rows_changed</td>
+<td>总 InnoDB 行操作数。</td>
+<td><code>db.SQL.Innodb_rows_inserted + db.SQL.Innodb_rows_deleted + db.SQL.Innodb_rows_updated</code></td>
+</tr>
+<tr>
+<td>active_transactions</td>
+<td>事务</td>
+<td>db.Transactions.active_transactions</td>
+<td>总活动事务数。</td>
+<td><code>SELECT COUNT(1) AS active_transactions FROM INFORMATION_SCHEMA.INNODB_TRX</code></td>
+</tr>
+<tr>
+<td>innodb_deadlocks</td>
+<td>锁</td>
+<td>db.Locks.innodb_deadlocks</td>
+<td>死锁总数。</td>
+<td><code>SELECT COUNT AS innodb_deadlocks FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_deadlocks&#39;</code></td>
+</tr>
+<tr>
+<td>innodb_lock_timeouts</td>
+<td>锁</td>
+<td>db.Locks.innodb_lock_timeouts</td>
+<td>超时的锁定的总数。</td>
+<td><code>SELECT COUNT AS innodb_lock_timeouts FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_timeouts&#39;</code></td>
+</tr>
+<tr>
+<td>innodb_row_lock_waits</td>
+<td>锁</td>
+<td>db.Locks.innodb_row_lock_waits</td>
+<td>导致等待的行锁总数。</td>
+<td><code>SELECT COUNT AS innodb_row_lock_waits FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_row_lock_waits&#39;</code></td>
+</tr>
+</tbody></table>
+<h3 id="监控RDS事件、日志和流"><a href="#监控RDS事件、日志和流" class="headerlink" title="监控RDS事件、日志和流"></a>监控RDS事件、日志和流</h3><ul>
+<li><em>Amazon EventBridge</em> 是一种无服务器事件总线服务，可以轻松地将应用程序与来自各种来源的数据相连接。EventBridge 可以从您自己的应用程序、Software-as-a-Service (SaaS) 应用程序和 AWS 服务传输实时数据流，然后将该数据路由到诸如 AWS Lambda 之类的目标。这使您能够监控服务中发生的事件，并构建事件驱动的架构。有关更多信息，请参阅 <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/">Amazon EventBridge 用户指南</a>。</li>
+<li><em>Amazon CloudWatch Logs</em> 可让您监控、存储和访问来自 Amazon RDS 实例、AWS CloudTrail 和其他来源的日志文件。Amazon CloudWatch Logs 可以监控日志文件中的信息，并在达到特定阈值时通知您。您还可以在高持久性存储中检索您的日志数据。有关更多信息，请参阅 <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/">Amazon CloudWatch Logs 用户指南</a>。</li>
+<li><em>AWS CloudTrail</em> 捕获由您的 AWS 账户 或代表该账户发出的 API 调用和相关事件，并将日志文件传输到您指定的 Amazon S3 存储桶。您可以标识哪些用户和账户调用了 AWS、从中发出调用的源 IP 地址以及调用的发生时间。有关更多信息，请参阅 <a href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/">AWS CloudTrail 用户指南</a>。</li>
+<li><em>数据库活动流</em>是一项 Amazon RDS 功能，它提供 Oracle 数据库实例中近乎实时的活动流。Amazon RDS 会将活动推送到 Amazon Kinesis 数据流。系统将自动创建 Kinesis 流。在 Kinesis 中，您可以配置AWS服务（例如 Amazon Kinesis Data Firehose），也可以配置 AWS Lambda 来使用流并存储数据。</li>
+</ul>
+<h4 id="监控RDS事件"><a href="#监控RDS事件" class="headerlink" title="监控RDS事件"></a>监控RDS事件</h4><h5 id="Amazon-RDS-记录与以下资源相关的事件："><a href="#Amazon-RDS-记录与以下资源相关的事件：" class="headerlink" title="Amazon RDS 记录与以下资源相关的事件："></a><strong>Amazon RDS 记录与以下资源相关的事件：</strong></h5><ul>
+<li>数据库实例</li>
+<li>数据库参数组</li>
+<li>数据库安全组</li>
+<li>数据库快照</li>
+<li>RDS Proxy 事件</li>
+</ul>
+<h5 id="查看事件"><a href="#查看事件" class="headerlink" title="查看事件"></a><strong>查看事件</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws rds describe-events \</span><br><span class="line">    --source-identifier test-instance \</span><br><span class="line">    --source-type db-instance \</span><br><span class="line">    --start-time 2022-03-13T22:00Z \</span><br><span class="line">    --end-time 2022-03-13T23:59Z</span><br></pre></td></tr></table></figure>
+
+<h5 id="RDS-事件通知"><a href="#RDS-事件通知" class="headerlink" title="RDS 事件通知"></a>RDS 事件通知</h5><h6 id="符合事件订阅条件的-RDS-资源"><a href="#符合事件订阅条件的-RDS-资源" class="headerlink" title="符合事件订阅条件的 RDS 资源"></a>符合事件订阅条件的 RDS 资源</h6><ul>
+<li>数据库实例</li>
+<li>数据库快照</li>
+<li>数据库参数组</li>
+<li>数据库安全组</li>
+<li>RDS 代理</li>
+<li>自定义引擎版本</li>
+</ul>
+<h6 id="订阅-Amazon-RDS-事件通知的基本流程"><a href="#订阅-Amazon-RDS-事件通知的基本流程" class="headerlink" title="订阅 Amazon RDS 事件通知的基本流程"></a>订阅 Amazon RDS 事件通知的基本流程</h6><ol>
+<li><p>您使用 Amazon RDS 控制台、AWS CLI 或者 API 创建 Amazon RDS 事件通知订阅。</p>
+<p>Amazon RDS 使用 Amazon SNS 主题的 ARN 标识每个订阅。Amazon RDS 控制台在您创建订阅时为您创建 ARN。使用 Amazon SNS 控制台、AWS CLI 或 Amazon SNS API 创建 ARN。</p>
+</li>
+<li><p>Amazon RDS 发送批准电子邮件或者 SMS 消息给您在订阅时提交的地址。</p>
+</li>
+<li><p>您可以通过选择所收到的通知中的链接来确认您的订阅。</p>
+</li>
+<li><p>Amazon RDS 控制台更新 <strong>My Event Subscriptions</strong>（我的事件订阅）部分，其中包含您的订阅状态。</p>
+</li>
+<li><p>Amazon RDS 开始将通知发送到您在创建订阅时提供的地址。</p>
+</li>
+</ol>
+<h6 id="发送-RDS-事件通知"><a href="#发送-RDS-事件通知" class="headerlink" title="发送 RDS 事件通知"></a>发送 RDS 事件通知</h6><p>Amazon RDS 会将通知发送到您在创建订阅时提供的地址。事件通知的传递可能需要长达五分钟。</p>
+<h6 id="Amazon-RDS-事件通知的计费"><a href="#Amazon-RDS-事件通知的计费" class="headerlink" title="Amazon RDS 事件通知的计费"></a>Amazon RDS 事件通知的计费</h6><p>Amazon RDS 事件通知的计费是通过 Amazon SNS 执行的。Amazon SNS 费用在使用事件通知时适用。有关 Amazon SNS 计费的更多信息，请参阅 <a href="http://aws.amazon.com/sns/#pricing">Amazon Simple Notification Service 定价</a>。</p>
+<h5 id="授予向-Amazon-SNS-主题发布通知的权限"><a href="#授予向-Amazon-SNS-主题发布通知的权限" class="headerlink" title="授予向 Amazon SNS 主题发布通知的权限"></a>授予向 Amazon SNS 主题发布通知的权限</h5><p>要授予 Amazon RDS 将通知发布到 Amazon Simple Notification Service (Amazon SNS) 主题的权限，请将 AWS Identity and Access Management (IAM) 策略附加到目标主题。</p>
+<p>原定设置情况下，Amazon SNS 主题具有一项策略，它允许同一账户中的所有 Amazon RDS 资源向其发布通知。您可以附加自定义策略以允许跨账户通知，或限制对某些资源的访问。</p>
+<p>以下是您附加到目标 Amazon SNS 主题的 IAM 策略示例。它将主题限制为名称与指定前缀匹配的数据库实例。要使用此策略，请指定以下值：</p>
+<ul>
+<li><code>Resource</code> – Amazon SNS 主题的 Amazon 资源名称 (ARN)</li>
+<li><code>SourceARN</code> – 您的 RDS 资源 ARN</li>
+<li><code>SourceAccount</code> – 您的 AWS 账户 ID</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;Version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2008-10-17&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;Statement&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;Effect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Allow&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Principal&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;Service&quot;</span><span class="punctuation">:</span> <span class="string">&quot;events.rds.amazonaws.com&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Action&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="string">&quot;sns:Publish&quot;</span></span><br><span class="line">      <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Resource&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arn:aws:sns:us-east-1:123456789012:topic_name&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Condition&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;ArnLike&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;aws:SourceArn&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arn:aws:rds:us-east-1:123456789012:db:prefix-*&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;StringEquals&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;aws:SourceAccount&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456789012&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="订阅-Amazon-RDS-事件通知"><a href="#订阅-Amazon-RDS-事件通知" class="headerlink" title="订阅 Amazon RDS 事件通知"></a>订阅 Amazon RDS 事件通知</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">aws rds create-event-subscription \</span><br><span class="line">    --subscription-name myeventsubscription \</span><br><span class="line">    --sns-topic-arn arn:aws:sns:us-east-1:123456789012:myawsuser-RDS \</span><br><span class="line">    --enabled</span><br></pre></td></tr></table></figure>
+
+<h3 id="监控RDS日志"><a href="#监控RDS日志" class="headerlink" title="监控RDS日志"></a>监控RDS日志</h3><h4 id="列出数据库日志文件"><a href="#列出数据库日志文件" class="headerlink" title="列出数据库日志文件"></a>列出数据库日志文件</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">aws rds describe-db-log-files --db-instance-identifier my-db-instance</span><br></pre></td></tr></table></figure>
+
+<h4 id="数据库日志发布到-Amazon-CloudWatch-Logs"><a href="#数据库日志发布到-Amazon-CloudWatch-Logs" class="headerlink" title="数据库日志发布到 Amazon CloudWatch Logs"></a>数据库日志发布到 Amazon CloudWatch Logs</h4><p>数据库日志驻留在文件系统上。Amazon RDS 不向主机提供对数据库实例的文件系统上的数据库日志的访问权限。出于此原因，Amazon RDS 可让您将数据库日志导出到 <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html">Amazon CloudWatch Logs</a>。通过 CloudWatch Logs，您可以对日志数据进行实时分析，将数据存储在高持久性存储中，并使用 CloudWatch Logs 代理管理数据。</p>
+<h4 id="指定要发布到-CloudWatch-Logs-的日志"><a href="#指定要发布到-CloudWatch-Logs-的日志" class="headerlink" title="指定要发布到 CloudWatch Logs 的日志"></a>指定要发布到 CloudWatch Logs 的日志</h4><ul>
+<li>Audit log</li>
+<li>Error log</li>
+<li>General log</li>
+<li>Slow query log</li>
+</ul>
+<p>可以在控制台中指定要发布哪些日志。CloudWatch Logs 中搜索和筛选您的日志。</p>
+<p>默认情况下，启用错误日志。下表总结了其他 MySQL 日志的要求。</p>
+<table>
+<thead>
+<tr>
+<th align="left">日志</th>
+<th align="left">要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">审核日志</td>
+<td align="left">数据库实例必须使用具有 <code>MARIADB_AUDIT_PLUGIN</code> 选项的自定义选项组。</td>
+</tr>
+<tr>
+<td align="left">常规日志</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>general_log = 1</code> 的自定义参数组才能启用常规日志。</td>
+</tr>
+<tr>
+<td align="left">慢速查询日志</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>slow_query_log = 1</code> 的自定义参数组才能启用慢速查询日志。</td>
+</tr>
+<tr>
+<td align="left">日志输出</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>log_output = FILE</code> 的自定义参数组，才能将日志写入文件系统并将日志发布到 CloudWatch Logs</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier mydbinstance \</span><br><span class="line">    --cloudwatch-logs-export-configuration &#x27;&#123;&quot;EnableLogTypes&quot;:[&quot;audit&quot;,&quot;error&quot;,&quot;general&quot;,&quot;slowquery&quot;]&#125;&#x27;</span><br></pre></td></tr></table></figure>
+
+<h4 id="RDS-for-MySQL-数据库日志"><a href="#RDS-for-MySQL-数据库日志" class="headerlink" title="RDS for MySQL 数据库日志"></a>RDS for MySQL 数据库日志</h4><h5 id="错误日志"><a href="#错误日志" class="headerlink" title="错误日志"></a>错误日志</h5><p>在 <code>mysql-error.log</code> 文件中写入错误。每个日志文件的名称上都会附有生成时间的信息 (以 UTC 时间标记)。日志文件还会拥有时间戳，帮助您确定日志项的写入时间。</p>
+<p>RDS for MySQL 仅在启动、关闭和遇到错误时才向错误日志写入内容。数据库实例可以运行数小时或者数天，而不向错误日志中写入新项。如果看不到最近的条目，则原因是服务器未遇到导致生成日志条目的错误。</p>
+<p>RDS for MySQL 每 <strong>5 分钟</strong>将 <code>mysql-error.log</code> 写入磁盘。它会将日志的内容附加到 <code>mysql-error-running.log</code> 中。</p>
+<p>RDS for MySQL <strong>每小时</strong>轮换一次 <code>mysql-error-running.log</code> 文件。它会<strong>保留过去两周</strong>生成的日志。</p>
+<h4 id="RDS-for-MySQL-慢速查询日志和一般日志"><a href="#RDS-for-MySQL-慢速查询日志和一般日志" class="headerlink" title="RDS for MySQL 慢速查询日志和一般日志"></a>RDS for MySQL 慢速查询日志和一般日志</h4><p>通过设置数据库参数组中的参数，可以将 RDS for MySQL 慢速查询日志和一般日志写入文件或者数据库表中。有关创建和修改数据库参数组的信息，请参阅 <a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html">使用参数组</a>。您必须先设置这些参数，然后才能在 Amazon RDS 控制台中或使用 Amazon RDS API、Amazon RDS CLI 或AWS软件开发工具包查看慢速查询日志或一般日志。</p>
+<ul>
+<li><code>slow_query_log</code>：要创建慢速查询日志，请设置为 1。默认值为 0。</li>
+<li><code>general_log</code>：要创建一般日志，请设置为 1。默认值为 0。</li>
+<li><code>long_query_time</code>：要防止在慢速查询日志中记录快速运行的查询，请指定需要记录的最短查询运行时间值，以秒为单位。默认值为 10 秒；最小值为 0。如果 log_output &#x3D; FILE，则可以指定精确到微秒的浮点值。如果 log_output &#x3D; TABLE，则必须指定精确到秒的整数值。系统只记录运行时间超过 <code>long_query_time</code> 值的查询。例如，将 <code>long_query_time</code> 设置为 0.1 可防止记录任何运行时间少于 100 毫秒的查询。</li>
+<li><code>log_queries_not_using_indexes</code>：要将所有不使用索引的查询记录到慢速查询日志，请设置为 1。将记录不使用索引的查询，即使它们的运行时间小于 <code>long_query_time</code> 参数的值。默认值为 0。</li>
+<li><code>log_output option</code>：您可为 <code>log_output</code> 参数指定下列选项之一。<ul>
+<li><strong>TABLE</strong> （默认）— 将一般查询写入 <code>mysql.general_log</code> 表，将慢速查询写入 <code>mysql.slow_log</code> 表。</li>
+<li><strong>FILE</strong>– 将一般查询日志和慢速查询日志写入文件系统。</li>
+<li><strong>NONE</strong>– 禁用日志记录。</li>
+</ul>
+</li>
+</ul>
+<h4 id="RDS-for-MySQL-的日志轮换和保留"><a href="#RDS-for-MySQL-的日志轮换和保留" class="headerlink" title="RDS for MySQL 的日志轮换和保留"></a>RDS for MySQL 的日志轮换和保留</h4><p>启用了日志记录时，Amazon RDS 会定期轮换表日志或删除日志文件。这是一种预防措施，用于降低大型日志文件阻止数据库使用或影响性能的可能性。RDS for MySQL 按如下方式处理轮换和删除：</p>
+<ul>
+<li><p>MySQL 慢速查询日志、错误日志和一般日志文件的大小限制为不超过为数据库实例分配的存储空间的 2%。为了维护此阈值，日志每小时自动轮换一次。MySQL 会删除超过两周的日志文件。如果在删除旧日志文件后，日志文件的总体大小超出此阈值，则将删除最早的日志文件，直到日志文件大小不再超出此阈值。</p>
+</li>
+<li><p>启用了 <code>FILE</code> 日志记录时，系统会每小时检查一次日志文件，并删除超过两周的日志文件。在一些情况下，删除之后的剩余日志文件的总体大小可能超过了数据库实例的分配空间的 2% 阈值。在这些情况下，将删除最旧的日志文件，直到日志文件大小不再超过此阈值。</p>
+</li>
+<li><p>启用了 <code>TABLE</code> 日志记录时，在某些情况下，日志表每 24 小时轮换一次。如果表日志使用的空间大于分配存储空间的 20% 或所有日志的总体大小超过 10GB，则会执行此轮换。如果用于数据库实例的空间量大于数据库实例的分配存储空间的 90%，则减小日志轮换的阈值。随后，如果表日志使用的空间大于分配存储空间的 10% 或是所有日志的总体大小超过 5 GB，则轮换日志表。您可以订阅 <code>low_free_storage</code> 事件，在轮换日志表以释放空间时，会发送相关通知。有关更多信息，请参阅“<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_Events.html">使用 Amazon RDS 事件通知</a>”。</p>
+<p>轮换日志表时，会将当前日志表复制到备份日志表，随后删除当前日志表中的条目。如果备份日志表已存在，则先将其删除，然后将当前日志表复制到备份。如果需要，您可以查询备份日志表。<code>mysql.general_log</code> 表的备份日志表名为 <code>mysql.general_log_backup</code>。<code>mysql.slow_log</code> 表的备份日志表名为 <code>mysql.slow_log_backup</code>。</p>
+<p>您可以通过调用 <code>mysql.general_log</code> 过程来轮换 <code>mysql.rds_rotate_general_log</code> 表。您可以通过调用 <code>mysql.slow_log</code> 过程来轮换 <code>mysql.rds_rotate_slow_log</code> 表。</p>
+<p>表日志在数据库版本升级期间会进行轮换。</p>
+</li>
+</ul>
+<h4 id="配置-MySQL-二进制日志记录"><a href="#配置-MySQL-二进制日志记录" class="headerlink" title="配置 MySQL 二进制日志记录"></a>配置 MySQL 二进制日志记录</h4><p><em>二进制日志</em>是一组日志文件，其中包含对 MySQL 服务器实例所做的数据修改的信息。二进制日志包含以下信息：</p>
+<ul>
+<li>描述数据库更改的事件，例如表创建或行修改</li>
+<li>有关更新数据的各语句的持续时间的信息</li>
+<li>本应更新但未更新数据的语句的事件</li>
+</ul>
+<p>自动备份功能会判断是否为 MySQL 开启或关闭二进制日志记录。您有以下选项：</p>
+<ul>
+<li><p>打开二进制日志记录</p>
+<p>将备份保留期设置为非零正值。</p>
+</li>
+<li><p>关闭二进制日志记录</p>
+<p>将备份保留期设置为 0</p>
+<p>Amazon RDS 上的 MariaDB 支持<em>基于行</em>、<em>基于语句</em>和<em>混合</em>二进制日志记录格式。我们建议混合使用，除非您需要特定的二进制日志格式。有关不同的 MySQL 二进制日志格式的详细信息，请参阅 MySQL 文档中的<a href="https://dev.mysql.com/doc/refman/8.0/en/binary-log-formats.html">二进制日志记录格式</a>。</p>
+<p><strong>重要</strong></p>
+<p>将二进制日志记录格式设置为基于行会生成非常大的二进制日志文件。大型二进制日志文件会减少可用于数据库实例的存储空间量，还会增加执行数据库实例还原操作所需的时间。</p>
+<p>基于语句的复制可能在源数据库实例和只读副本之间导致不一致。有关更多信息，请参阅 MySQL 文档中的<a href="https://dev.mysql.com/doc/refman/8.0/en/replication-rbr-safe-unsafe.html">确定二进制日志记录中的安全和不安全语句</a>。</p>
+</li>
+</ul>
+<p><strong>设置 MySQL 二进制日志记录格式</strong></p>
+<ol>
+<li><p>通过以下网址打开 Amazon RDS 控制台：<a href="https://console.aws.amazon.com/rds/%E3%80%82">https://console.aws.amazon.com/rds/。</a></p>
+</li>
+<li><p>在导航窗格中，选择<strong>参数组</strong>。</p>
+</li>
+<li><p>选择您要修改的数据库实例所使用的参数组。</p>
+<p>您无法修改默认参数组。如果数据库实例使用默认参数组，则创建新的参数组并将其与数据库实例关联。</p>
+<p>有关参数组的更多信息，请参阅<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html">使用参数组</a>。</p>
+</li>
+<li><p>从 <strong>Parameter group actions (参数组操作)</strong> 中，选择 **Edit (编辑)**。</p>
+</li>
+<li><p>将 <code>binlog_format</code> 参数设置为您选择的二进制日志记录格式（<strong>ROW</strong>、<strong>STATEMENT</strong> 或 <strong>MIXED</strong>）。您也可以使用值 <code>OFF</code> 关闭二进制日志。</p>
+</li>
+<li><p>选择<strong>保存更改</strong>以保存对数据库参数组的更新。</p>
+</li>
+</ol>
+<h3 id="监控-AWS-CloudTrail-中的-Amazon-RDS-API-调用"><a href="#监控-AWS-CloudTrail-中的-Amazon-RDS-API-调用" class="headerlink" title="监控 AWS CloudTrail 中的 Amazon RDS API 调用"></a>监控 AWS CloudTrail 中的 Amazon RDS API 调用</h3><p>所有 Amazon RDS 操作均由 CloudTrail 记录。CloudTrail 提供了用户、角色或 AWS 服务在 Amazon RDS 中所执行操作的记录。</p>
+<h4 id="CloudTrail-事件"><a href="#CloudTrail-事件" class="headerlink" title="CloudTrail 事件"></a>CloudTrail 事件</h4><p>CloudTrail 将 Amazon RDS 的 API 调用作为事件捕获。一个<em>事件</em>表示来自任何源的一个请求，包括有关所请求的操作、操作的日期和时间、请求参数等方面的信息。事件包含来自 Amazon RDS 控制台的调用和对 Amazon RDS API 操作的代码调用。</p>
+<p>Amazon RDS 活动记录在 <strong>Event history</strong>（事件历史记录）中的 CloudTrail 事件中。您可以使用 CloudTrail 控制台查看AWS区域中过去 90 天内记录的 API 活动和事件。有关更多信息，请参阅<a href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html">使用 CloudTrail 事件历史记录查看事件</a>。</p>
+<h4 id="CloudTrail-跟踪"><a href="#CloudTrail-跟踪" class="headerlink" title="CloudTrail 跟踪"></a>CloudTrail 跟踪</h4><p>要持续记录 AWS 账户中的事件（包括 Amazon RDS 的事件），请创建<em>跟踪记录</em>。跟踪是一种配置，可用于将事件传送到指定的 Amazon S3 存储桶。CloudTrail 通常会在账户活动发生后的 15 分钟内传送日志文件。</p>
+<p>如果您不配置跟踪，则仍可在 CloudTrail 控制台中的 <strong>Event history（事件历史记录）</strong> 中查看最新事件。</p>
+<p>您可以为 AWS 账户创建两种类型的跟踪：应用于所有区域的跟踪，或应用于一个区域的跟踪。默认情况下，在控制台中创建跟踪时，此跟踪应用于所有区域。</p>
+<h5 id="为-CloudTrail-配置-Amazon-SNS-通知"><a href="#为-CloudTrail-配置-Amazon-SNS-通知" class="headerlink" title="为 CloudTrail 配置 Amazon SNS 通知"></a>为 CloudTrail 配置 Amazon SNS 通知</h5>]]></content>
+      <categories>
+        <category>infrastructure</category>
+      </categories>
+      <tags>
+        <tag>monitor</tag>
+      </tags>
+  </entry>
+</search>

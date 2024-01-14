@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="eqYp8rgm4bYTHT1B8wTq3LcACt8JwHg9AwpuLQFgBWk">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha256-xejo6yLi6vGtAjcMIsY8BHdKsLg7QynVlFMzdQgUuy8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fallenjlz.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.12.3","exturl":false,"sidebar":{"position":"left","width":240,"display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="云资源监控CloudWatch RDS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="云资源监控">
+<meta property="og:url" content="http://fallenjlz.github.io/2022/10/19/%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7/index.html">
+<meta property="og:site_name" content="llo&#39;s Blog">
+<meta property="og:description" content="云资源监控CloudWatch RDS">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://docs.aws.amazon.com/zh_cn/AmazonCloudWatch/latest/monitoring/images/CW-Overview.png">
+<meta property="og:image" content="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/images/rds-cloudwatch.png">
+<meta property="article:published_time" content="2022-10-19T08:27:27.000Z">
+<meta property="article:modified_time" content="2024-01-14T07:47:12.701Z">
+<meta property="article:author" content="llo">
+<meta property="article:tag" content="monitor">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://docs.aws.amazon.com/zh_cn/AmazonCloudWatch/latest/monitoring/images/CW-Overview.png">
+
+
+<link rel="canonical" href="http://fallenjlz.github.io/2022/10/19/%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://fallenjlz.github.io/2022/10/19/%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7/","path":"2022/10/19/云资源监控/","title":"云资源监控"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>云资源监控 | llo's Blog</title>
+  
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">llo's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">self-awakening</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">4</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">6</span></a></li><li class="menu-item menu-item-schedule"><a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>Sitemap</a></li><li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>Commonweal 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7"><span class="nav-number">1.</span> <span class="nav-text">云资源监控</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CloudWatch"><span class="nav-number">1.1.</span> <span class="nav-text">CloudWatch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS"><span class="nav-number">1.1.1.</span> <span class="nav-text">RDS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BCloudwatch%E6%8C%87%E6%A0%87"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">查看Cloudwatch指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-CloudWatch-%E8%AD%A6%E6%8A%A5"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">创建 CloudWatch 警报</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Amazon-RDS-%E4%B8%8A%E7%9A%84-Performance-Insights"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">Amazon RDS 上的 Performance Insights</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%89%93%E5%BC%80%E5%92%8C%E5%85%B3%E9%97%AD-Performance-Insights"><span class="nav-number">1.1.1.3.1.</span> <span class="nav-text">打开和关闭 Performance Insights</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A2%9E%E5%BC%BA%E7%9B%91%E6%8E%A7%E6%9D%A5%E7%9B%91%E6%8E%A7%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.1.1.4.</span> <span class="nav-text">增强监控来监控操作系统</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E4%B8%BA%E5%A2%9E%E5%BC%BA%E7%9B%91%E6%8E%A7%E5%88%9B%E5%BB%BA-IAM-%E8%A7%92%E8%89%B2"><span class="nav-number">1.1.1.4.0.1.</span> <span class="nav-text">为增强监控创建 IAM 角色</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%89%93%E5%BC%80%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BE%8B%E7%9A%84%E5%A2%9E%E5%BC%BA%E7%9B%91%E6%8E%A7"><span class="nav-number">1.1.1.4.0.2.</span> <span class="nav-text">打开数据库实例的增强监控</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%89%93%E5%BC%80%E5%A4%9A%E5%8F%AF%E7%94%A8%E5%8C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9B%86%E7%BE%A4%E7%9A%84%E5%A2%9E%E5%BC%BA%E7%9B%91%E6%8E%A7"><span class="nav-number">1.1.1.4.0.3.</span> <span class="nav-text">打开多可用区数据库集群的增强监控</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS%E6%8C%87%E6%A0%87"><span class="nav-number">1.1.2.</span> <span class="nav-text">RDS指标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RDS-%E7%9A%84-Amazon-CloudWatch-%E6%8C%87%E6%A0%87"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">RDS 的 Amazon CloudWatch 指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDS-%E7%9A%84-Amazon-CloudWatch-%E7%BB%B4%E5%BA%A6"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">RDS 的 Amazon CloudWatch 维度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Performance-Insights-%E7%9A%84-Amazon-CloudWatch-%E6%8C%87%E6%A0%87"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">Performance Insights 的 Amazon CloudWatch 指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Performance-Insights-%E8%AE%A1%E6%95%B0%E5%99%A8%E6%8C%87%E6%A0%87"><span class="nav-number">1.1.2.4.</span> <span class="nav-text">Performance Insights 计数器指标</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#RDS-for-MariaDB-%E5%92%8C-RDS-for-MySQL-%E7%9A%84%E6%9C%AC%E6%9C%BA%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">1.1.2.4.0.1.</span> <span class="nav-text">RDS for MariaDB 和 RDS for MySQL 的本机计数器</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E4%BA%8E-Amazon-RDS-for-MariaDB-%E5%92%8C-RDS-for-MySQL-%E7%9A%84%E9%9D%9E%E6%9C%AC%E6%9C%BA%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">1.1.2.4.0.2.</span> <span class="nav-text">适用于 Amazon RDS for MariaDB 和 RDS for MySQL 的非本机计数器</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7RDS%E4%BA%8B%E4%BB%B6%E3%80%81%E6%97%A5%E5%BF%97%E5%92%8C%E6%B5%81"><span class="nav-number">1.1.3.</span> <span class="nav-text">监控RDS事件、日志和流</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7RDS%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">监控RDS事件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Amazon-RDS-%E8%AE%B0%E5%BD%95%E4%B8%8E%E4%BB%A5%E4%B8%8B%E8%B5%84%E6%BA%90%E7%9B%B8%E5%85%B3%E7%9A%84%E4%BA%8B%E4%BB%B6%EF%BC%9A"><span class="nav-number">1.1.3.1.1.</span> <span class="nav-text">Amazon RDS 记录与以下资源相关的事件：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.1.3.1.2.</span> <span class="nav-text">查看事件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RDS-%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5"><span class="nav-number">1.1.3.1.3.</span> <span class="nav-text">RDS 事件通知</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%AC%A6%E5%90%88%E4%BA%8B%E4%BB%B6%E8%AE%A2%E9%98%85%E6%9D%A1%E4%BB%B6%E7%9A%84-RDS-%E8%B5%84%E6%BA%90"><span class="nav-number">1.1.3.1.3.1.</span> <span class="nav-text">符合事件订阅条件的 RDS 资源</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E8%AE%A2%E9%98%85-Amazon-RDS-%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.3.1.3.2.</span> <span class="nav-text">订阅 Amazon RDS 事件通知的基本流程</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%8F%91%E9%80%81-RDS-%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5"><span class="nav-number">1.1.3.1.3.3.</span> <span class="nav-text">发送 RDS 事件通知</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Amazon-RDS-%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5%E7%9A%84%E8%AE%A1%E8%B4%B9"><span class="nav-number">1.1.3.1.3.4.</span> <span class="nav-text">Amazon RDS 事件通知的计费</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8E%88%E4%BA%88%E5%90%91-Amazon-SNS-%E4%B8%BB%E9%A2%98%E5%8F%91%E5%B8%83%E9%80%9A%E7%9F%A5%E7%9A%84%E6%9D%83%E9%99%90"><span class="nav-number">1.1.3.1.4.</span> <span class="nav-text">授予向 Amazon SNS 主题发布通知的权限</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%A2%E9%98%85-Amazon-RDS-%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5"><span class="nav-number">1.1.3.1.5.</span> <span class="nav-text">订阅 Amazon RDS 事件通知</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7RDS%E6%97%A5%E5%BF%97"><span class="nav-number">1.1.4.</span> <span class="nav-text">监控RDS日志</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="nav-number">1.1.4.1.</span> <span class="nav-text">列出数据库日志文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%97%A5%E5%BF%97%E5%8F%91%E5%B8%83%E5%88%B0-Amazon-CloudWatch-Logs"><span class="nav-number">1.1.4.2.</span> <span class="nav-text">数据库日志发布到 Amazon CloudWatch Logs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A6%81%E5%8F%91%E5%B8%83%E5%88%B0-CloudWatch-Logs-%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">1.1.4.3.</span> <span class="nav-text">指定要发布到 CloudWatch Logs 的日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDS-for-MySQL-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%97%A5%E5%BF%97"><span class="nav-number">1.1.4.4.</span> <span class="nav-text">RDS for MySQL 数据库日志</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97"><span class="nav-number">1.1.4.4.1.</span> <span class="nav-text">错误日志</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDS-for-MySQL-%E6%85%A2%E9%80%9F%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%E5%92%8C%E4%B8%80%E8%88%AC%E6%97%A5%E5%BF%97"><span class="nav-number">1.1.4.5.</span> <span class="nav-text">RDS for MySQL 慢速查询日志和一般日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDS-for-MySQL-%E7%9A%84%E6%97%A5%E5%BF%97%E8%BD%AE%E6%8D%A2%E5%92%8C%E4%BF%9D%E7%95%99"><span class="nav-number">1.1.4.6.</span> <span class="nav-text">RDS for MySQL 的日志轮换和保留</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-MySQL-%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95"><span class="nav-number">1.1.4.7.</span> <span class="nav-text">配置 MySQL 二进制日志记录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7-AWS-CloudTrail-%E4%B8%AD%E7%9A%84-Amazon-RDS-API-%E8%B0%83%E7%94%A8"><span class="nav-number">1.1.5.</span> <span class="nav-text">监控 AWS CloudTrail 中的 Amazon RDS API 调用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CloudTrail-%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.1.5.1.</span> <span class="nav-text">CloudTrail 事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CloudTrail-%E8%B7%9F%E8%B8%AA"><span class="nav-number">1.1.5.2.</span> <span class="nav-text">CloudTrail 跟踪</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%BA-CloudTrail-%E9%85%8D%E7%BD%AE-Amazon-SNS-%E9%80%9A%E7%9F%A5"><span class="nav-number">1.1.5.2.1.</span> <span class="nav-text">为 CloudTrail 配置 Amazon SNS 通知</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="llo"
+      src="/images/402217main_ssc2008-01b_full.jpeg">
+  <p class="site-author-name" itemprop="name">llo</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fallenjlz" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fallenjlz" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:evanliufly@gmail.com" title="E-Mail → mailto:evanliufly@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license site-overview-item animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+<div class="cc-license animated" itemprop="sponsor">
+  <a href="https://www.netlify.com" class="cc-opacity" title="Deploy with Netlify → https://www.netlify.com" target="_blank"><img width="80" src="https://www.netlify.com/img/global/badges/netlify-dark.svg" alt="Netlify"></a>
+</div>
+
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+  <a href="https://github.com/fallenjlz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://fallenjlz.github.io/2022/10/19/%E4%BA%91%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/402217main_ssc2008-01b_full.jpeg">
+      <meta itemprop="name" content="llo">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="llo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="云资源监控 | llo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          云资源监控
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-10-19 16:27:27" itemprop="dateCreated datePublished" datetime="2022-10-19T16:27:27+08:00">2022-10-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2024-01-14 15:47:12" itemprop="dateModified" datetime="2024-01-14T15:47:12+08:00">2024-01-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/infrastructure/" itemprop="url" rel="index"><span itemprop="name">infrastructure</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Symbols count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Symbols count in article: </span>
+      <span>19k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>17 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="云资源监控"><a href="#云资源监控" class="headerlink" title="云资源监控"></a>云资源监控</h1><h2 id="CloudWatch"><a href="#CloudWatch" class="headerlink" title="CloudWatch"></a>CloudWatch</h2><p><img src="https://docs.aws.amazon.com/zh_cn/AmazonCloudWatch/latest/monitoring/images/CW-Overview.png" alt="img"></p>
+<h3 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h3><span id="more"></span> 
+
+
+<p><img src="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/images/rds-cloudwatch.png" alt="img"></p>
+<p>Amazon RDS 向 Amazon CloudWatch 发布以下类型的指标：</p>
+<ul>
+<li>RDS 数据库实例的指标</li>
+<li>Performance Insights 指标</li>
+<li>增强监控指标（发布到 Amazon CloudWatch Logs）</li>
+<li>Amazon RDS 服务配额的用量指标</li>
+</ul>
+<h4 id="查看Cloudwatch指标"><a href="#查看Cloudwatch指标" class="headerlink" title="查看Cloudwatch指标"></a>查看Cloudwatch指标</h4><p>列出<code>AWS/RDS</code> 命名空间中的所有指标</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws cloudwatch list-metrics --namespace AWS/RDS</span><br></pre></td></tr></table></figure>
+
+<p>获取 <code>my-instance</code> 在特定 24 小时时段内的 <code>CPUUtilization</code> 统计数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">aws cloudwatch get-metric-statistics --namespace AWS/RDS \</span><br><span class="line">     --metric-name CPUUtilization \</span><br><span class="line">     --start-time 2021-12-15T00:00:00Z \</span><br><span class="line">     --end-time 2021-12-16T00:00:00Z \</span><br><span class="line">     --period 360 \</span><br><span class="line">     --statistics Minimum \</span><br><span class="line">     --dimensions Name=DBInstanceIdentifier,Value=my-instance</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建-CloudWatch-警报"><a href="#创建-CloudWatch-警报" class="headerlink" title="创建 CloudWatch 警报"></a>创建 CloudWatch 警报</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">aws cloudwatch put-metric-alarm \</span><br><span class="line">		--alarm-name cpu-mon \</span><br><span class="line">		--alarm-description &quot;Alarm when CPU exceeds 70 percent&quot; \</span><br><span class="line">		--metric-name CPUUtilization \</span><br><span class="line">		--namespace AWS/EC2 \</span><br><span class="line">		--statistic Average \</span><br><span class="line">		--period 300 \</span><br><span class="line">		--threshold 70 \</span><br><span class="line">		--comparison-operator GreaterThanThreshold \</span><br><span class="line">		--dimensions &quot;Name=InstanceId,Value=i-12345678&quot; \</span><br><span class="line">		--evaluation-periods 2 \</span><br><span class="line">		--alarm-actions arn:aws:sns:us-east-1:111122223333:MyTopic </span><br><span class="line">		--unit Percent</span><br></pre></td></tr></table></figure>
+
+<h4 id="Amazon-RDS-上的-Performance-Insights"><a href="#Amazon-RDS-上的-Performance-Insights" class="headerlink" title="Amazon RDS 上的 Performance Insights"></a>Amazon RDS 上的 Performance Insights</h4><p>利用 Performance Insights 控制面板，您可以可视化 Amazon RDS 数据库实例负载上的数据库负载，并按等待状态、SQL 语句、主机或用户来筛选负载。</p>
+<h5 id="打开和关闭-Performance-Insights"><a href="#打开和关闭-Performance-Insights" class="headerlink" title="打开和关闭 Performance Insights"></a>打开和关闭 Performance Insights</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier sample-db-instance \</span><br><span class="line">    --enable-performance-insights \</span><br><span class="line">    --performance-insights-retention-period 7</span><br></pre></td></tr></table></figure>
+
+<p>可以指定 <code>7</code>、<code>month</code> * 31（其中 <code>month</code> 为 1–23 之间的数字）或 <code>731</code>。例如，如果您想将性能数据保留 3 个月，请指定 <code>93</code>，也就是 3 * 31。原定设置值为 <code>7</code> 天。有关保留期的更多信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.cost.html">性能详情的定价和数据留存</a>。</p>
+<h4 id="增强监控来监控操作系统"><a href="#增强监控来监控操作系统" class="headerlink" title="增强监控来监控操作系统"></a>增强监控来监控操作系统</h4><p>Amazon RDS 为数据库实例运行的操作系统 (OS) 实时提供指标。您可以在控制台上查看 RDS 数据库实例的所有系统指标和过程信息。</p>
+<p><strong>成本：</strong></p>
+<p>增强监测指标存储在 CloudWatch Logs 中，而不是存储在 CloudWatch 指标中。</p>
+<ul>
+<li>根据 CloudWatch Logs 数据传输和存储费率计算的</li>
+<li>增强型监测功能定义的精细程度越高，成本越大</li>
+<li>实例越多越大</li>
+<li>支持的工作负载计算密集程度</li>
+</ul>
+<p><strong>设置和启用增强监控</strong></p>
+<h6 id="为增强监控创建-IAM-角色"><a href="#为增强监控创建-IAM-角色" class="headerlink" title="为增强监控创建 IAM 角色"></a>为增强监控创建 IAM 角色</h6><p>增强监测需要代表您执行操作的权限来向 CloudWatch Logs发送操作系统指标信息。</p>
+<ol>
+<li><p>通过以下网址打开 <a target="_blank" rel="noopener" href="https://console.aws.amazon.com/iam/home#home">IAM 控制台</a>：<a target="_blank" rel="noopener" href="https://console.aws.amazon.com/">https://console.aws.amazon.com</a>。</p>
+</li>
+<li><p>在导航窗格中，选择 **Roles (角色)**。</p>
+</li>
+<li><p>选择 <strong>Create role</strong>（创建角色）。</p>
+</li>
+<li><p>选择 <strong>AWS service</strong>（Amazon Web Services 服务）选项卡，然后从服务列表中选择 <strong>RDS</strong>。</p>
+</li>
+<li><p>选择 <strong>RDS - Enhanced Monitoring</strong>（RDS - 增强监测），然后选择 <strong>Next</strong>（下一步）。</p>
+</li>
+<li><p>确保 <strong>Permissions policies</strong>（权限策略）显示 <strong>AmazonRDSEnhancedMonitoringRole</strong>，然后选择 <strong>Next</strong>（下一步）。</p>
+</li>
+<li><p>对于 **Role name (角色名称)**，为您的角色输入一个名称。例如，输入 <code>emaccess</code>。</p>
+<p>您角色的可信实体是 AWS 服务 <strong>monitoring.rds.amazonaws.com</strong>。</p>
+</li>
+<li><p>选择 <strong>Create role</strong>（创建角色）。</p>
+</li>
+</ol>
+<h6 id="打开数据库实例的增强监控"><a href="#打开数据库实例的增强监控" class="headerlink" title="打开数据库实例的增强监控"></a>打开数据库实例的增强监控</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier mydbinstance \</span><br><span class="line">    --monitoring-interval 30 \</span><br><span class="line">    --monitoring-role-arn arn:aws:iam::123456789012:role/emaccess</span><br></pre></td></tr></table></figure>
+
+<h6 id="打开多可用区数据库集群的增强监控"><a href="#打开多可用区数据库集群的增强监控" class="headerlink" title="打开多可用区数据库集群的增强监控"></a>打开多可用区数据库集群的增强监控</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">aws rds modify-db-cluster \</span><br><span class="line">    --db-cluster-identifier mydbcluster \</span><br><span class="line">    --monitoring-interval 30 \</span><br><span class="line">    --monitoring-role-arn arn:aws:iam::123456789012:role/emaccess</span><br></pre></td></tr></table></figure>
+
+<h3 id="RDS指标"><a href="#RDS指标" class="headerlink" title="RDS指标"></a>RDS指标</h3><h4 id="RDS-的-Amazon-CloudWatch-指标"><a href="#RDS-的-Amazon-CloudWatch-指标" class="headerlink" title="RDS 的 Amazon CloudWatch 指标"></a>RDS 的 Amazon CloudWatch 指标</h4><table>
+<thead>
+<tr>
+<th><code>BinLogDiskUsage</code></th>
+<th><strong>二进制日志磁盘使用情况 (MB)</strong></th>
+<th>二进制日志所占的磁盘空间大小。如果为 MySQL 和 MariaDB 实例（包括只读副本）启用了自动备份，则会创建二进制日志。</th>
+<th>字节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BurstBalance</code></td>
+<td><strong>突发余额（百分比）</strong></td>
+<td>可用的通用型 SSD (GP2) 突增存储桶 I&#x2F;O 点数的百分比。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>CheckpointLag</code></td>
+<td><strong>检查点滞后（毫秒）</strong></td>
+<td>自最近一次检查点以来的时间。仅适用于 RDS for PostgreSQL。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ConnectionAttempts</code></td>
+<td><strong>Connection Attempts (Count)</strong> [连接尝试（计数）]</td>
+<td>尝试连接实例的次数，无论成功与否。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>CPUUtilization</code></td>
+<td><strong>CPU 利用率（百分比）</strong></td>
+<td>CPU 使用百分率。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>CPUCreditUsage</code></td>
+<td><strong>CPU 额度使用（计数）</strong></td>
+<td>（T2 实例）实例为保持 CPU 使用率而花费的 CPU 积分数。一个 CPU 积分等于一个 vCPU 以 100% 的使用率运行一分钟或等同的 vCPU、使用率与时间的组合。例如，您可以有一个 vCPU 按 50% 使用率运行两分钟，或者两个 vCPU 按 25% 使用率运行两分钟。CPU 积分指标仅每 5 分钟提供一次。如果您指定一个大于五分钟的时间段，请使用<code>Sum</code> 统计数据，而非 <code>Average</code> 统计数据。</td>
+<td>积分 (vCPU 分钟)</td>
+</tr>
+<tr>
+<td><code>CPUCreditBalance</code></td>
+<td><strong>CPU 额度余额（计数）</strong></td>
+<td>（T2 实例）实例自启动后已累积获得的 CPU 积分数。对于 T2 标准，<code>CPUCreditBalance</code> 还包含已累积的启动积分数。在获得积分后，积分将在积分余额中累积；在花费积分后，将从积分余额中扣除积分。积分余额具有最大值限制，这是由实例大小决定的。在达到限制后，将丢弃获得的任何新积分。对于 T2 标准，启动积分不计入限制。实例可以花费 <code>CPUCreditBalance</code> 中的积分，以便突增到基准 CPU 使用率以上。在实例运行过程中，<code>CPUCreditBalance</code> 中的积分不会过期。在实例停止时，<code>CPUCreditBalance</code> 不会保留，并且所有累积的积分都将丢失。CPU 积分指标仅每 5 分钟提供一次。启动积分在 Amazon RDS 中的作用方式与在 Amazon EC2 中的作用方式相同。有关更多信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances-standard-mode-concepts.html#launch-credits">适用于 Linux 实例的 Amazon Elastic Compute Cloud 用户指南</a>中的<em>启动积分</em>。</td>
+<td>积分（vCPU 分钟）</td>
+</tr>
+<tr>
+<td><code>DatabaseConnections</code></td>
+<td><strong>数据库连接（计数）</strong></td>
+<td>连接至数据库实例的客户端网络连接数。数据库会话数可能高于指标值，因为指标值不包括以下内容：不再具有网络连接但数据库尚未清理的会话数据库引擎出于自身目的创建的会话由数据库引擎的并行执行功能创建的会话由数据库引擎任务计划程序创建的会话Amazon RDS 连接</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>DiskQueueDepth</code></td>
+<td><strong>队列深度（计数）</strong></td>
+<td>等待访问磁盘的未完成 I&#x2F;O（读取&#x2F;写入请求）的数量。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>EBSByteBalance%</code></td>
+<td><strong>EBS 字节余额（百分比）</strong></td>
+<td>RDS 数据库突增存储桶中剩余的吞吐量积分的百分比 此指标仅对基本监控可用。该指标值基于包括根卷在内的所有卷的吞吐量和 IOPS，而不是仅基于那些包含数据库文件的卷。要查找支持此指标的实例大小，请参阅 <em>Amazon EC2 用户指南（适用于 Linux 实例）</em> 中<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html#current">默认优化的 EBS 表</a>中带星号 (*) 的实例大小。<code>Sum</code> 统计数据不适用于该指标。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>EBSIOBalance%</code></td>
+<td><strong>EBS IO 余额（百分比）</strong></td>
+<td>RDS 数据库突增存储桶中剩余的 I&#x2F;O 积分的百分比 此指标仅对基本监控可用。该指标值基于包括根卷在内的所有卷的吞吐量和 IOPS，而不是仅基于那些包含数据库文件的卷。要查找支持此指标的实例大小，请参阅 <em>Amazon EC2 用户指南（适用于 Linux 实例）</em> 中<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html#current">默认优化的 EBS 表</a>中带星号 (*) 的实例大小。<code>Sum</code> 统计数据不适用于该指标。这个指标不同于 <code>BurstBalance</code>。要了解如何使用此指标，请参阅<a target="_blank" rel="noopener" href="http://aws.amazon.com/blogs/compute/improving-application-performance-and-reducing-costs-with-amazon-ebs-optimized-instance-burst-capability/">利用 Amazon EBS 优化型实例突发功能提升应用程序性能并降低成本</a>。</td>
+<td>百分比</td>
+</tr>
+<tr>
+<td><code>FailedSQLServerAgentJobsCount</code></td>
+<td><strong>Failed SQL Server Agent Jobs Count (Count&#x2F;Minute) (失败的 SQL Server Agent 作业计数（计数&#x2F;分钟）)</strong></td>
+<td>过去 1 分钟内失败的 Microsoft SQL Server Agent 作业的数量。</td>
+<td>计数&#x2F;分钟</td>
+</tr>
+<tr>
+<td><code>FreeableMemory</code></td>
+<td><strong>可用内存 (MB)</strong></td>
+<td>随机存取内存的可用大小。对于 MariaDB、MySQL、Oracle 和 PostgreSQL 数据库实例，此指标报告 <code>MemAvailable</code> 的 <code>/proc/meminfo</code> 字段的值。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>FreeLocalStorage</code></td>
+<td>**Free Local Storage (MB)**（可用本地存储 (MB)）</td>
+<td>可用本地存储空间的大小。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。（这不适用于 Aurora Serverless v2。）</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>FreeStorageSpace</code></td>
+<td><strong>可用存储空间 (MB)</strong></td>
+<td>可用存储空间的大小。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>MaximumUsedTransactionIDs</code></td>
+<td><strong>最大已用事务 ID（计数）</strong></td>
+<td>已使用的最大事务 ID。仅适用于 PostgreSQL。</td>
+<td>计数</td>
+</tr>
+<tr>
+<td><code>NetworkReceiveThroughput</code></td>
+<td><strong>网络接收吞吐量（MB&#x2F;秒）</strong></td>
+<td>数据库实例的传入（接收）网络流量，包括用于监控和复制的客户数据库流量和 Amazon RDS 流量。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>NetworkTransmitThroughput</code></td>
+<td><strong>网络传输吞吐量（MB&#x2F;秒）</strong></td>
+<td>数据库实例的传出（传输）网络流量，包括用于监控和复制的客户数据库流量和 Amazon RDS 流量。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>OldestReplicationSlotLag</code></td>
+<td><strong>最早副本槽滞后 (MB)</strong></td>
+<td>在接收预写日志 (WAL) 数据方面最滞后的副本的滞后大小。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>ReadIOPS</code></td>
+<td><strong>读取 IOPS（计数&#x2F;秒）</strong></td>
+<td>每秒平均磁盘读取 I&#x2F;O 操作数。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadIOPSLocalStorage</code></td>
+<td>**Read IOPS Local Storage (Count&#x2F;Second)**（读取 IOPS 本地存储（计数&#x2F;秒））</td>
+<td>每秒至本地存储的平均磁盘读取输入&#x2F;输出操作数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadLatency</code></td>
+<td><strong>读取延迟（毫秒）</strong></td>
+<td>每个磁盘 I&#x2F;O 操作所需的平均时间。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReadLatencyLocalStorage</code></td>
+<td>**Read Latency Local Storage (Milliseconds)**（读取延迟本地存储（毫秒））</td>
+<td>每个磁盘对本地存储输入&#x2F;输出操作所需的平均时间。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReadThroughput</code></td>
+<td><strong>读取吞吐量（MB&#x2F;秒）</strong></td>
+<td>每秒从磁盘读取的平均字节数。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReadThroughputLocalStorage</code></td>
+<td>**Read Throughput Local Storage (MB&#x2F;Second)**（读取吞吐量本地存储（MB&#x2F;秒））</td>
+<td>每秒从磁盘至本地存储读取的平均字节数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>ReplicaLag</code></td>
+<td><strong>副本滞后（毫秒）</strong></td>
+<td>对于只读副本配置，只读副本数据库实例滞后于源数据库实例的时间量。适用于 MariaDB、Microsoft SQL Server、MySQL、Oracle 和 PostgreSQL 只读副本。对于多可用区数据库集群，写入器数据库实例上的最新事务与读取器数据库实例上的最新应用事务之间的时间差异。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>ReplicationSlotDiskUsage</code></td>
+<td><strong>副本插槽磁盘使用情况 (MB)</strong></td>
+<td>副本槽文件使用的磁盘空间。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>SwapUsage</code></td>
+<td><strong>交换区使用情况 (MB)</strong></td>
+<td>数据库实例上使用的交换空间的大小。此指标对于 SQL Server 不可用。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>TransactionLogsDiskUsage</code></td>
+<td><strong>事务日志磁盘使用情况 (MB)</strong></td>
+<td>事务日志使用的磁盘空间。适用于 PostgreSQL。</td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>TransactionLogsGeneration</code></td>
+<td><strong>事务日志生成（MB&#x2F;秒）</strong></td>
+<td>每秒生成的事务日志的大小。适用于 PostgreSQL。</td>
+<td>Bytes&#x2F;Second</td>
+</tr>
+<tr>
+<td><code>WriteIOPS</code></td>
+<td><strong>写入 IOPS (计数&#x2F;秒)</strong></td>
+<td>每秒平均磁盘写入 I&#x2F;O 操作数。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteIOPSLocalStorage</code></td>
+<td>**Write IOPS Local Storage (Count&#x2F;Second)**（写入 IOPS 本地存储（计数&#x2F;秒））</td>
+<td>本地存储上的每秒平均磁盘写入 I&#x2F;O 操作数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>计数&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteLatency</code></td>
+<td><strong>写入延迟（毫秒）</strong></td>
+<td>每个磁盘 I&#x2F;O 操作所需的平均时间。</td>
+<td>秒</td>
+</tr>
+<tr>
+<td><code>WriteLatencyLocalStorage</code></td>
+<td>**Write Latency Local Storage (Milliseconds)**（写入延迟本地存储（毫秒））</td>
+<td>本地存储上每个磁盘 I&#x2F;O 操作所需的平均时间。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>毫秒</td>
+</tr>
+<tr>
+<td><code>WriteThroughput</code></td>
+<td><strong>写入吞吐量（MB&#x2F;秒）</strong></td>
+<td>每秒写入磁盘的平均字节数。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+<tr>
+<td><code>WriteThroughputLocalStorage</code></td>
+<td>**Write Throughput Local Storage (MB&#x2F;Second)**（写入吞吐量本地存储（MB&#x2F;秒））</td>
+<td>本地存储每秒写入磁盘的平均字节数。此指标仅适用于具有 NVMe SSD 实例存储卷的数据库实例类。有关具有 NVMe SSD 实例存储卷的 Amazon EC2 实例的信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html#instance-store-volumes">实例存储卷</a>。等效的 RDS 数据库实例类具有相同的实例存储卷。例如，db.m6gd 和 db.r6gd 数据库实例类具有 NVMe SSD 实例存储卷。</td>
+<td>字节&#x2F;秒</td>
+</tr>
+</tbody></table>
+<h4 id="RDS-的-Amazon-CloudWatch-维度"><a href="#RDS-的-Amazon-CloudWatch-维度" class="headerlink" title="RDS 的 Amazon CloudWatch 维度"></a>RDS 的 Amazon CloudWatch 维度</h4><p>可以使用下表中的任何维度筛选 Amazon RDS 指标数据。</p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">筛选为 . . 请求的数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>DBInstanceIdentifier</code></td>
+<td align="left">特定的数据库实例。</td>
+</tr>
+<tr>
+<td align="left"><code>DatabaseClass</code></td>
+<td align="left">数据库类中的所有实例。例如，您可以聚合属于数据库类 <code>db.r5.large</code> 的所有实例的指标。</td>
+</tr>
+<tr>
+<td align="left"><code>EngineName</code></td>
+<td align="left">仅标识的引擎名称。例如，您可以聚合具有引擎名称 <code>postgres</code> 的所有实例的指标。</td>
+</tr>
+<tr>
+<td align="left"><code>SourceRegion</code></td>
+<td align="left">仅指定区域。例如，您可以聚合 <code>us-east-1</code> 区域中的所有数据库实例的指标。</td>
+</tr>
+</tbody></table>
+<h4 id="Performance-Insights-的-Amazon-CloudWatch-指标"><a href="#Performance-Insights-的-Amazon-CloudWatch-指标" class="headerlink" title="Performance Insights 的 Amazon CloudWatch 指标"></a>Performance Insights 的 Amazon CloudWatch 指标</h4><p>可以从 Performance Insights 查询相同的数据，但具有 CloudWatch 中的指标可以轻松地添加 CloudWatch 警报。</p>
+<table>
+<thead>
+<tr>
+<th align="left">指标</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">DBLoad</td>
+<td align="left">数据库引擎的活动会话的数量。通常，您需要活动会话的平均数量数据。在 Performance Insights 中，作为 <code>db.load.avg</code> 查询此数据。</td>
+</tr>
+<tr>
+<td align="left">DBLoadCPU</td>
+<td align="left">等待事件类型为 CPU 的活动会话的数量。在 Performance Insights 中，作为 <code>db.load.avg</code> 查询此数据，按等待事件类型 <code>CPU</code> 进行筛选。</td>
+</tr>
+<tr>
+<td align="left">DBLoadNonCPU</td>
+<td align="left">等待事件类型不为 CPU 的活动会话的数量。</td>
+</tr>
+</tbody></table>
+<p>查看指标</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">aws cloudwatch get-metric-statistics \</span><br><span class="line">    --region us-west-2 \</span><br><span class="line">    --namespace AWS/RDS \</span><br><span class="line">    --metric-name DBLoad  \</span><br><span class="line">    --period 60 \</span><br><span class="line">    --statistics Average \</span><br><span class="line">    --start-time 1532035185 \</span><br><span class="line">    --end-time 1532036185 \</span><br><span class="line">    --dimensions Name=DBInstanceIdentifier,Value=db-loadtest-0</span><br></pre></td></tr></table></figure>
+
+<h4 id="Performance-Insights-计数器指标"><a href="#Performance-Insights-计数器指标" class="headerlink" title="Performance Insights 计数器指标"></a>Performance Insights 计数器指标</h4><p>计数器指标是 Performance Insights 控制面板中的操作系统和数据库性能指标。为帮助确定和分析性能问题，您可将计数器指标与数据库负载相关联。</p>
+<h6 id="RDS-for-MariaDB-和-RDS-for-MySQL-的本机计数器"><a href="#RDS-for-MariaDB-和-RDS-for-MySQL-的本机计数器" class="headerlink" title="RDS for MariaDB 和 RDS for MySQL 的本机计数器"></a>RDS for MariaDB 和 RDS for MySQL 的本机计数器</h6><p>本机指标由数据库引擎定义，而不是由 Amazon RDS 定义。有关这些原生指标的定义，请参阅 MySQL 文档中的<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.6/en/server-status-variables.html">服务器状态变量</a>。</p>
+<table>
+<thead>
+<tr>
+<th align="left">计数器</th>
+<th align="left">类型</th>
+<th align="left">单位</th>
+<th align="left">指标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Com_analyze</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_analyze</td>
+</tr>
+<tr>
+<td align="left">Com_optimize</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_optimize</td>
+</tr>
+<tr>
+<td align="left">Com_select</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Com_select</td>
+</tr>
+<tr>
+<td align="left">连接</td>
+<td align="left">SQL</td>
+<td align="left">每分钟尝试连接到 MySQL 服务器的次数（无论成功与否）</td>
+<td align="left">db.Users.Connections</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_deleted</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_deleted</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_inserted</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_inserted</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_read</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_read</td>
+</tr>
+<tr>
+<td align="left">Innodb_rows_updated</td>
+<td align="left">SQL</td>
+<td align="left">每秒行数</td>
+<td align="left">db.SQL.Innodb_rows_updated</td>
+</tr>
+<tr>
+<td align="left">Select_full_join</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_full_join</td>
+</tr>
+<tr>
+<td align="left">Select_full_range_join</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_full_range_join</td>
+</tr>
+<tr>
+<td align="left">Select_range</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_range</td>
+</tr>
+<tr>
+<td align="left">Select_range_check</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_range_check</td>
+</tr>
+<tr>
+<td align="left">Select_scan</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Select_scan</td>
+</tr>
+<tr>
+<td align="left">Slow_queries</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Slow_queries</td>
+</tr>
+<tr>
+<td align="left">Sort_merge_passes</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_merge_passes</td>
+</tr>
+<tr>
+<td align="left">Sort_range</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_range</td>
+</tr>
+<tr>
+<td align="left">Sort_rows</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_rows</td>
+</tr>
+<tr>
+<td align="left">Sort_scan</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Sort_scan</td>
+</tr>
+<tr>
+<td align="left">问题</td>
+<td align="left">SQL</td>
+<td align="left">每秒查询数</td>
+<td align="left">db.SQL.Questions</td>
+</tr>
+<tr>
+<td align="left">Innodb_row_lock_time</td>
+<td align="left">锁</td>
+<td align="left">毫秒数（平均值）</td>
+<td align="left">db.Locks.Innodb_row_lock_time</td>
+</tr>
+<tr>
+<td align="left">Table_locks_immediate</td>
+<td align="left">锁</td>
+<td align="left">每秒请求数</td>
+<td align="left">db.Locks.Table_locks_immediate</td>
+</tr>
+<tr>
+<td align="left">Table_locks_waited</td>
+<td align="left">锁</td>
+<td align="left">每秒请求数</td>
+<td align="left">db.Locks.Table_locks_waited</td>
+</tr>
+<tr>
+<td align="left">Aborted_clients</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Aborted_clients</td>
+</tr>
+<tr>
+<td align="left">Aborted_connects</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Aborted_connects</td>
+</tr>
+<tr>
+<td align="left">Threads_created</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Threads_created</td>
+</tr>
+<tr>
+<td align="left">Threads_running</td>
+<td align="left">用户</td>
+<td align="left">连接</td>
+<td align="left">db.Users.Threads_running</td>
+</tr>
+<tr>
+<td align="left">Innodb_data_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_data_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_dblwr_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_dblwr_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_log_write_requests</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_log_write_requests</td>
+</tr>
+<tr>
+<td align="left">Innodb_log_writes</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒操作数</td>
+<td align="left">db.IO.Innodb_log_writes</td>
+</tr>
+<tr>
+<td align="left">Innodb_pages_written</td>
+<td align="left">I&#x2F;O</td>
+<td align="left">每秒页数</td>
+<td align="left">db.IO.Innodb_pages_written</td>
+</tr>
+<tr>
+<td align="left">Created_tmp_disk_tables</td>
+<td align="left">临时文件</td>
+<td align="left">每秒表数</td>
+<td align="left">db.Temp.Created_tmp_disk_tables</td>
+</tr>
+<tr>
+<td align="left">Created_tmp_tables</td>
+<td align="left">临时文件</td>
+<td align="left">每秒表数</td>
+<td align="left">db.Temp.Created_tmp_tables</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_pages_data</td>
+<td align="left">缓存</td>
+<td align="left">页面</td>
+<td align="left">db.Cache.Innodb_buffer_pool_pages_data</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_pages_total</td>
+<td align="left">缓存</td>
+<td align="left">页面</td>
+<td align="left">db.Cache.Innodb_buffer_pool_pages_total</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_read_requests</td>
+<td align="left">缓存</td>
+<td align="left">每秒页数</td>
+<td align="left">db.Cache.Innodb_buffer_pool_read_requests</td>
+</tr>
+<tr>
+<td align="left">Innodb_buffer_pool_reads</td>
+<td align="left">缓存</td>
+<td align="left">每秒页数</td>
+<td align="left">db.Cache.Innodb_buffer_pool_reads</td>
+</tr>
+<tr>
+<td align="left">Opened_tables</td>
+<td align="left">缓存</td>
+<td align="left">表</td>
+<td align="left">db.Cache.Opened_tables</td>
+</tr>
+<tr>
+<td align="left">Opened_table_definitions</td>
+<td align="left">缓存</td>
+<td align="left">表</td>
+<td align="left">db.Cache.Opened_table_definitions</td>
+</tr>
+<tr>
+<td align="left">Qcache_hits</td>
+<td align="left">缓存</td>
+<td align="left">查询</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<h6 id="适用于-Amazon-RDS-for-MariaDB-和-RDS-for-MySQL-的非本机计数器"><a href="#适用于-Amazon-RDS-for-MariaDB-和-RDS-for-MySQL-的非本机计数器" class="headerlink" title="适用于 Amazon RDS for MariaDB 和 RDS for MySQL 的非本机计数器"></a>适用于 Amazon RDS for MariaDB 和 RDS for MySQL 的非本机计数器</h6><p>非本机计数器指标是 Amazon RDS 定义的计数器。非本机指标可以是您使用特定查询获取的指标。非本机指标还可以是派生指标，使用两个或更多个本机计数器来计算比率、命中率或延迟。</p>
+<table>
+<thead>
+<tr>
+<th>innodb_buffer_pool_hits</th>
+<th>缓存</th>
+<th>db.Cache.innoDB_buffer_pool_hits</th>
+<th>InnoDB 可满足的缓冲池中的读取数。</th>
+<th><code>innodb_buffer_pool_read_requests - innodb_buffer_pool_reads</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>innodb_buffer_pool_hit_rate</td>
+<td>缓存</td>
+<td>db.Cache.innoDB_buffer_pool_hit_rate</td>
+<td>InnoDB 可满足的缓冲池中的读取百分比。</td>
+<td><code>100 * innodb_buffer_pool_read_requests / (innodb_buffer_pool_read_requests + innodb_buffer_pool_reads)</code></td>
+</tr>
+<tr>
+<td>innodb_buffer_pool_usage</td>
+<td>缓存</td>
+<td>db.Cache.innoDB_buffer_pool_usage</td>
+<td>包含数据（页面）的 InnoDB 缓冲池的百分比。<strong>注意</strong>在使用压缩表时，此值可改变。有关更多信息，请参阅 MySQL 文档中的<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.6/en/server-status-variables.html">服务器状态变量</a>中有关 <code>Innodb_buffer_pool_pages_data</code> 和 <code>Innodb_buffer_pool_pages_total</code> 的信息。</td>
+<td><code>Innodb_buffer_pool_pages_data / Innodb_buffer_pool_pages_total * 100.0</code></td>
+</tr>
+<tr>
+<td>query_cache_hit_rate</td>
+<td>缓存</td>
+<td>db.Cache.query_cache_hit_rate</td>
+<td>MySQL 结果集缓存（查询缓存）命中率。</td>
+<td><code>Qcache_hits / (QCache_hits + Com_select) * 100</code></td>
+</tr>
+<tr>
+<td>innodb_datafile_writes_to_disk</td>
+<td>I&#x2F;O</td>
+<td>db.IO.innoDB_datafile_writes_to_disk</td>
+<td>InnoDB 数据文件写入磁盘的操作数，不包括两次写和重做日志记录写入操作。</td>
+<td><code>Innodb_data_writes - Innodb_log_writes - Innodb_dblwr_writes</code></td>
+</tr>
+<tr>
+<td>innodb_rows_changed</td>
+<td>SQL</td>
+<td>db.SQL.innodb_rows_changed</td>
+<td>总 InnoDB 行操作数。</td>
+<td><code>db.SQL.Innodb_rows_inserted + db.SQL.Innodb_rows_deleted + db.SQL.Innodb_rows_updated</code></td>
+</tr>
+<tr>
+<td>active_transactions</td>
+<td>事务</td>
+<td>db.Transactions.active_transactions</td>
+<td>总活动事务数。</td>
+<td><code>SELECT COUNT(1) AS active_transactions FROM INFORMATION_SCHEMA.INNODB_TRX</code></td>
+</tr>
+<tr>
+<td>innodb_deadlocks</td>
+<td>锁</td>
+<td>db.Locks.innodb_deadlocks</td>
+<td>死锁总数。</td>
+<td><code>SELECT COUNT AS innodb_deadlocks FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_deadlocks&#39;</code></td>
+</tr>
+<tr>
+<td>innodb_lock_timeouts</td>
+<td>锁</td>
+<td>db.Locks.innodb_lock_timeouts</td>
+<td>超时的锁定的总数。</td>
+<td><code>SELECT COUNT AS innodb_lock_timeouts FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_timeouts&#39;</code></td>
+</tr>
+<tr>
+<td>innodb_row_lock_waits</td>
+<td>锁</td>
+<td>db.Locks.innodb_row_lock_waits</td>
+<td>导致等待的行锁总数。</td>
+<td><code>SELECT COUNT AS innodb_row_lock_waits FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE NAME=&#39;lock_row_lock_waits&#39;</code></td>
+</tr>
+</tbody></table>
+<h3 id="监控RDS事件、日志和流"><a href="#监控RDS事件、日志和流" class="headerlink" title="监控RDS事件、日志和流"></a>监控RDS事件、日志和流</h3><ul>
+<li><em>Amazon EventBridge</em> 是一种无服务器事件总线服务，可以轻松地将应用程序与来自各种来源的数据相连接。EventBridge 可以从您自己的应用程序、Software-as-a-Service (SaaS) 应用程序和 AWS 服务传输实时数据流，然后将该数据路由到诸如 AWS Lambda 之类的目标。这使您能够监控服务中发生的事件，并构建事件驱动的架构。有关更多信息，请参阅 <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/eventbridge/latest/userguide/">Amazon EventBridge 用户指南</a>。</li>
+<li><em>Amazon CloudWatch Logs</em> 可让您监控、存储和访问来自 Amazon RDS 实例、AWS CloudTrail 和其他来源的日志文件。Amazon CloudWatch Logs 可以监控日志文件中的信息，并在达到特定阈值时通知您。您还可以在高持久性存储中检索您的日志数据。有关更多信息，请参阅 <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/">Amazon CloudWatch Logs 用户指南</a>。</li>
+<li><em>AWS CloudTrail</em> 捕获由您的 AWS 账户 或代表该账户发出的 API 调用和相关事件，并将日志文件传输到您指定的 Amazon S3 存储桶。您可以标识哪些用户和账户调用了 AWS、从中发出调用的源 IP 地址以及调用的发生时间。有关更多信息，请参阅 <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/">AWS CloudTrail 用户指南</a>。</li>
+<li><em>数据库活动流</em>是一项 Amazon RDS 功能，它提供 Oracle 数据库实例中近乎实时的活动流。Amazon RDS 会将活动推送到 Amazon Kinesis 数据流。系统将自动创建 Kinesis 流。在 Kinesis 中，您可以配置AWS服务（例如 Amazon Kinesis Data Firehose），也可以配置 AWS Lambda 来使用流并存储数据。</li>
+</ul>
+<h4 id="监控RDS事件"><a href="#监控RDS事件" class="headerlink" title="监控RDS事件"></a>监控RDS事件</h4><h5 id="Amazon-RDS-记录与以下资源相关的事件："><a href="#Amazon-RDS-记录与以下资源相关的事件：" class="headerlink" title="Amazon RDS 记录与以下资源相关的事件："></a><strong>Amazon RDS 记录与以下资源相关的事件：</strong></h5><ul>
+<li>数据库实例</li>
+<li>数据库参数组</li>
+<li>数据库安全组</li>
+<li>数据库快照</li>
+<li>RDS Proxy 事件</li>
+</ul>
+<h5 id="查看事件"><a href="#查看事件" class="headerlink" title="查看事件"></a><strong>查看事件</strong></h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">aws rds describe-events \</span><br><span class="line">    --source-identifier test-instance \</span><br><span class="line">    --source-type db-instance \</span><br><span class="line">    --start-time 2022-03-13T22:00Z \</span><br><span class="line">    --end-time 2022-03-13T23:59Z</span><br></pre></td></tr></table></figure>
+
+<h5 id="RDS-事件通知"><a href="#RDS-事件通知" class="headerlink" title="RDS 事件通知"></a>RDS 事件通知</h5><h6 id="符合事件订阅条件的-RDS-资源"><a href="#符合事件订阅条件的-RDS-资源" class="headerlink" title="符合事件订阅条件的 RDS 资源"></a>符合事件订阅条件的 RDS 资源</h6><ul>
+<li>数据库实例</li>
+<li>数据库快照</li>
+<li>数据库参数组</li>
+<li>数据库安全组</li>
+<li>RDS 代理</li>
+<li>自定义引擎版本</li>
+</ul>
+<h6 id="订阅-Amazon-RDS-事件通知的基本流程"><a href="#订阅-Amazon-RDS-事件通知的基本流程" class="headerlink" title="订阅 Amazon RDS 事件通知的基本流程"></a>订阅 Amazon RDS 事件通知的基本流程</h6><ol>
+<li><p>您使用 Amazon RDS 控制台、AWS CLI 或者 API 创建 Amazon RDS 事件通知订阅。</p>
+<p>Amazon RDS 使用 Amazon SNS 主题的 ARN 标识每个订阅。Amazon RDS 控制台在您创建订阅时为您创建 ARN。使用 Amazon SNS 控制台、AWS CLI 或 Amazon SNS API 创建 ARN。</p>
+</li>
+<li><p>Amazon RDS 发送批准电子邮件或者 SMS 消息给您在订阅时提交的地址。</p>
+</li>
+<li><p>您可以通过选择所收到的通知中的链接来确认您的订阅。</p>
+</li>
+<li><p>Amazon RDS 控制台更新 <strong>My Event Subscriptions</strong>（我的事件订阅）部分，其中包含您的订阅状态。</p>
+</li>
+<li><p>Amazon RDS 开始将通知发送到您在创建订阅时提供的地址。</p>
+</li>
+</ol>
+<h6 id="发送-RDS-事件通知"><a href="#发送-RDS-事件通知" class="headerlink" title="发送 RDS 事件通知"></a>发送 RDS 事件通知</h6><p>Amazon RDS 会将通知发送到您在创建订阅时提供的地址。事件通知的传递可能需要长达五分钟。</p>
+<h6 id="Amazon-RDS-事件通知的计费"><a href="#Amazon-RDS-事件通知的计费" class="headerlink" title="Amazon RDS 事件通知的计费"></a>Amazon RDS 事件通知的计费</h6><p>Amazon RDS 事件通知的计费是通过 Amazon SNS 执行的。Amazon SNS 费用在使用事件通知时适用。有关 Amazon SNS 计费的更多信息，请参阅 <a target="_blank" rel="noopener" href="http://aws.amazon.com/sns/#pricing">Amazon Simple Notification Service 定价</a>。</p>
+<h5 id="授予向-Amazon-SNS-主题发布通知的权限"><a href="#授予向-Amazon-SNS-主题发布通知的权限" class="headerlink" title="授予向 Amazon SNS 主题发布通知的权限"></a>授予向 Amazon SNS 主题发布通知的权限</h5><p>要授予 Amazon RDS 将通知发布到 Amazon Simple Notification Service (Amazon SNS) 主题的权限，请将 AWS Identity and Access Management (IAM) 策略附加到目标主题。</p>
+<p>原定设置情况下，Amazon SNS 主题具有一项策略，它允许同一账户中的所有 Amazon RDS 资源向其发布通知。您可以附加自定义策略以允许跨账户通知，或限制对某些资源的访问。</p>
+<p>以下是您附加到目标 Amazon SNS 主题的 IAM 策略示例。它将主题限制为名称与指定前缀匹配的数据库实例。要使用此策略，请指定以下值：</p>
+<ul>
+<li><code>Resource</code> – Amazon SNS 主题的 Amazon 资源名称 (ARN)</li>
+<li><code>SourceARN</code> – 您的 RDS 资源 ARN</li>
+<li><code>SourceAccount</code> – 您的 AWS 账户 ID</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;Version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2008-10-17&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;Statement&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;Effect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Allow&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Principal&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;Service&quot;</span><span class="punctuation">:</span> <span class="string">&quot;events.rds.amazonaws.com&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Action&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="string">&quot;sns:Publish&quot;</span></span><br><span class="line">      <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Resource&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arn:aws:sns:us-east-1:123456789012:topic_name&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Condition&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;ArnLike&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;aws:SourceArn&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arn:aws:rds:us-east-1:123456789012:db:prefix-*&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;StringEquals&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;aws:SourceAccount&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456789012&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="订阅-Amazon-RDS-事件通知"><a href="#订阅-Amazon-RDS-事件通知" class="headerlink" title="订阅 Amazon RDS 事件通知"></a>订阅 Amazon RDS 事件通知</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">aws rds create-event-subscription \</span><br><span class="line">    --subscription-name myeventsubscription \</span><br><span class="line">    --sns-topic-arn arn:aws:sns:us-east-1:123456789012:myawsuser-RDS \</span><br><span class="line">    --enabled</span><br></pre></td></tr></table></figure>
+
+<h3 id="监控RDS日志"><a href="#监控RDS日志" class="headerlink" title="监控RDS日志"></a>监控RDS日志</h3><h4 id="列出数据库日志文件"><a href="#列出数据库日志文件" class="headerlink" title="列出数据库日志文件"></a>列出数据库日志文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws rds describe-db-log-files --db-instance-identifier my-db-instance</span><br></pre></td></tr></table></figure>
+
+<h4 id="数据库日志发布到-Amazon-CloudWatch-Logs"><a href="#数据库日志发布到-Amazon-CloudWatch-Logs" class="headerlink" title="数据库日志发布到 Amazon CloudWatch Logs"></a>数据库日志发布到 Amazon CloudWatch Logs</h4><p>数据库日志驻留在文件系统上。Amazon RDS 不向主机提供对数据库实例的文件系统上的数据库日志的访问权限。出于此原因，Amazon RDS 可让您将数据库日志导出到 <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html">Amazon CloudWatch Logs</a>。通过 CloudWatch Logs，您可以对日志数据进行实时分析，将数据存储在高持久性存储中，并使用 CloudWatch Logs 代理管理数据。</p>
+<h4 id="指定要发布到-CloudWatch-Logs-的日志"><a href="#指定要发布到-CloudWatch-Logs-的日志" class="headerlink" title="指定要发布到 CloudWatch Logs 的日志"></a>指定要发布到 CloudWatch Logs 的日志</h4><ul>
+<li>Audit log</li>
+<li>Error log</li>
+<li>General log</li>
+<li>Slow query log</li>
+</ul>
+<p>可以在控制台中指定要发布哪些日志。CloudWatch Logs 中搜索和筛选您的日志。</p>
+<p>默认情况下，启用错误日志。下表总结了其他 MySQL 日志的要求。</p>
+<table>
+<thead>
+<tr>
+<th align="left">日志</th>
+<th align="left">要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">审核日志</td>
+<td align="left">数据库实例必须使用具有 <code>MARIADB_AUDIT_PLUGIN</code> 选项的自定义选项组。</td>
+</tr>
+<tr>
+<td align="left">常规日志</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>general_log = 1</code> 的自定义参数组才能启用常规日志。</td>
+</tr>
+<tr>
+<td align="left">慢速查询日志</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>slow_query_log = 1</code> 的自定义参数组才能启用慢速查询日志。</td>
+</tr>
+<tr>
+<td align="left">日志输出</td>
+<td align="left">数据库实例必须使用具有参数设置 <code>log_output = FILE</code> 的自定义参数组，才能将日志写入文件系统并将日志发布到 CloudWatch Logs</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">aws rds modify-db-instance \</span><br><span class="line">    --db-instance-identifier mydbinstance \</span><br><span class="line">    --cloudwatch-logs-export-configuration &#x27;&#123;&quot;EnableLogTypes&quot;:[&quot;audit&quot;,&quot;error&quot;,&quot;general&quot;,&quot;slowquery&quot;]&#125;&#x27;</span><br></pre></td></tr></table></figure>
+
+<h4 id="RDS-for-MySQL-数据库日志"><a href="#RDS-for-MySQL-数据库日志" class="headerlink" title="RDS for MySQL 数据库日志"></a>RDS for MySQL 数据库日志</h4><h5 id="错误日志"><a href="#错误日志" class="headerlink" title="错误日志"></a>错误日志</h5><p>在 <code>mysql-error.log</code> 文件中写入错误。每个日志文件的名称上都会附有生成时间的信息 (以 UTC 时间标记)。日志文件还会拥有时间戳，帮助您确定日志项的写入时间。</p>
+<p>RDS for MySQL 仅在启动、关闭和遇到错误时才向错误日志写入内容。数据库实例可以运行数小时或者数天，而不向错误日志中写入新项。如果看不到最近的条目，则原因是服务器未遇到导致生成日志条目的错误。</p>
+<p>RDS for MySQL 每 <strong>5 分钟</strong>将 <code>mysql-error.log</code> 写入磁盘。它会将日志的内容附加到 <code>mysql-error-running.log</code> 中。</p>
+<p>RDS for MySQL <strong>每小时</strong>轮换一次 <code>mysql-error-running.log</code> 文件。它会<strong>保留过去两周</strong>生成的日志。</p>
+<h4 id="RDS-for-MySQL-慢速查询日志和一般日志"><a href="#RDS-for-MySQL-慢速查询日志和一般日志" class="headerlink" title="RDS for MySQL 慢速查询日志和一般日志"></a>RDS for MySQL 慢速查询日志和一般日志</h4><p>通过设置数据库参数组中的参数，可以将 RDS for MySQL 慢速查询日志和一般日志写入文件或者数据库表中。有关创建和修改数据库参数组的信息，请参阅 <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html">使用参数组</a>。您必须先设置这些参数，然后才能在 Amazon RDS 控制台中或使用 Amazon RDS API、Amazon RDS CLI 或AWS软件开发工具包查看慢速查询日志或一般日志。</p>
+<ul>
+<li><code>slow_query_log</code>：要创建慢速查询日志，请设置为 1。默认值为 0。</li>
+<li><code>general_log</code>：要创建一般日志，请设置为 1。默认值为 0。</li>
+<li><code>long_query_time</code>：要防止在慢速查询日志中记录快速运行的查询，请指定需要记录的最短查询运行时间值，以秒为单位。默认值为 10 秒；最小值为 0。如果 log_output &#x3D; FILE，则可以指定精确到微秒的浮点值。如果 log_output &#x3D; TABLE，则必须指定精确到秒的整数值。系统只记录运行时间超过 <code>long_query_time</code> 值的查询。例如，将 <code>long_query_time</code> 设置为 0.1 可防止记录任何运行时间少于 100 毫秒的查询。</li>
+<li><code>log_queries_not_using_indexes</code>：要将所有不使用索引的查询记录到慢速查询日志，请设置为 1。将记录不使用索引的查询，即使它们的运行时间小于 <code>long_query_time</code> 参数的值。默认值为 0。</li>
+<li><code>log_output option</code>：您可为 <code>log_output</code> 参数指定下列选项之一。<ul>
+<li><strong>TABLE</strong> （默认）— 将一般查询写入 <code>mysql.general_log</code> 表，将慢速查询写入 <code>mysql.slow_log</code> 表。</li>
+<li><strong>FILE</strong>– 将一般查询日志和慢速查询日志写入文件系统。</li>
+<li><strong>NONE</strong>– 禁用日志记录。</li>
+</ul>
+</li>
+</ul>
+<h4 id="RDS-for-MySQL-的日志轮换和保留"><a href="#RDS-for-MySQL-的日志轮换和保留" class="headerlink" title="RDS for MySQL 的日志轮换和保留"></a>RDS for MySQL 的日志轮换和保留</h4><p>启用了日志记录时，Amazon RDS 会定期轮换表日志或删除日志文件。这是一种预防措施，用于降低大型日志文件阻止数据库使用或影响性能的可能性。RDS for MySQL 按如下方式处理轮换和删除：</p>
+<ul>
+<li><p>MySQL 慢速查询日志、错误日志和一般日志文件的大小限制为不超过为数据库实例分配的存储空间的 2%。为了维护此阈值，日志每小时自动轮换一次。MySQL 会删除超过两周的日志文件。如果在删除旧日志文件后，日志文件的总体大小超出此阈值，则将删除最早的日志文件，直到日志文件大小不再超出此阈值。</p>
+</li>
+<li><p>启用了 <code>FILE</code> 日志记录时，系统会每小时检查一次日志文件，并删除超过两周的日志文件。在一些情况下，删除之后的剩余日志文件的总体大小可能超过了数据库实例的分配空间的 2% 阈值。在这些情况下，将删除最旧的日志文件，直到日志文件大小不再超过此阈值。</p>
+</li>
+<li><p>启用了 <code>TABLE</code> 日志记录时，在某些情况下，日志表每 24 小时轮换一次。如果表日志使用的空间大于分配存储空间的 20% 或所有日志的总体大小超过 10GB，则会执行此轮换。如果用于数据库实例的空间量大于数据库实例的分配存储空间的 90%，则减小日志轮换的阈值。随后，如果表日志使用的空间大于分配存储空间的 10% 或是所有日志的总体大小超过 5 GB，则轮换日志表。您可以订阅 <code>low_free_storage</code> 事件，在轮换日志表以释放空间时，会发送相关通知。有关更多信息，请参阅“<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_Events.html">使用 Amazon RDS 事件通知</a>”。</p>
+<p>轮换日志表时，会将当前日志表复制到备份日志表，随后删除当前日志表中的条目。如果备份日志表已存在，则先将其删除，然后将当前日志表复制到备份。如果需要，您可以查询备份日志表。<code>mysql.general_log</code> 表的备份日志表名为 <code>mysql.general_log_backup</code>。<code>mysql.slow_log</code> 表的备份日志表名为 <code>mysql.slow_log_backup</code>。</p>
+<p>您可以通过调用 <code>mysql.general_log</code> 过程来轮换 <code>mysql.rds_rotate_general_log</code> 表。您可以通过调用 <code>mysql.slow_log</code> 过程来轮换 <code>mysql.rds_rotate_slow_log</code> 表。</p>
+<p>表日志在数据库版本升级期间会进行轮换。</p>
+</li>
+</ul>
+<h4 id="配置-MySQL-二进制日志记录"><a href="#配置-MySQL-二进制日志记录" class="headerlink" title="配置 MySQL 二进制日志记录"></a>配置 MySQL 二进制日志记录</h4><p><em>二进制日志</em>是一组日志文件，其中包含对 MySQL 服务器实例所做的数据修改的信息。二进制日志包含以下信息：</p>
+<ul>
+<li>描述数据库更改的事件，例如表创建或行修改</li>
+<li>有关更新数据的各语句的持续时间的信息</li>
+<li>本应更新但未更新数据的语句的事件</li>
+</ul>
+<p>自动备份功能会判断是否为 MySQL 开启或关闭二进制日志记录。您有以下选项：</p>
+<ul>
+<li><p>打开二进制日志记录</p>
+<p>将备份保留期设置为非零正值。</p>
+</li>
+<li><p>关闭二进制日志记录</p>
+<p>将备份保留期设置为 0</p>
+<p>Amazon RDS 上的 MariaDB 支持<em>基于行</em>、<em>基于语句</em>和<em>混合</em>二进制日志记录格式。我们建议混合使用，除非您需要特定的二进制日志格式。有关不同的 MySQL 二进制日志格式的详细信息，请参阅 MySQL 文档中的<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/binary-log-formats.html">二进制日志记录格式</a>。</p>
+<p><strong>重要</strong></p>
+<p>将二进制日志记录格式设置为基于行会生成非常大的二进制日志文件。大型二进制日志文件会减少可用于数据库实例的存储空间量，还会增加执行数据库实例还原操作所需的时间。</p>
+<p>基于语句的复制可能在源数据库实例和只读副本之间导致不一致。有关更多信息，请参阅 MySQL 文档中的<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/replication-rbr-safe-unsafe.html">确定二进制日志记录中的安全和不安全语句</a>。</p>
+</li>
+</ul>
+<p><strong>设置 MySQL 二进制日志记录格式</strong></p>
+<ol>
+<li><p>通过以下网址打开 Amazon RDS 控制台：<a target="_blank" rel="noopener" href="https://console.aws.amazon.com/rds/%E3%80%82">https://console.aws.amazon.com/rds/。</a></p>
+</li>
+<li><p>在导航窗格中，选择<strong>参数组</strong>。</p>
+</li>
+<li><p>选择您要修改的数据库实例所使用的参数组。</p>
+<p>您无法修改默认参数组。如果数据库实例使用默认参数组，则创建新的参数组并将其与数据库实例关联。</p>
+<p>有关参数组的更多信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html">使用参数组</a>。</p>
+</li>
+<li><p>从 <strong>Parameter group actions (参数组操作)</strong> 中，选择 **Edit (编辑)**。</p>
+</li>
+<li><p>将 <code>binlog_format</code> 参数设置为您选择的二进制日志记录格式（<strong>ROW</strong>、<strong>STATEMENT</strong> 或 <strong>MIXED</strong>）。您也可以使用值 <code>OFF</code> 关闭二进制日志。</p>
+</li>
+<li><p>选择<strong>保存更改</strong>以保存对数据库参数组的更新。</p>
+</li>
+</ol>
+<h3 id="监控-AWS-CloudTrail-中的-Amazon-RDS-API-调用"><a href="#监控-AWS-CloudTrail-中的-Amazon-RDS-API-调用" class="headerlink" title="监控 AWS CloudTrail 中的 Amazon RDS API 调用"></a>监控 AWS CloudTrail 中的 Amazon RDS API 调用</h3><p>所有 Amazon RDS 操作均由 CloudTrail 记录。CloudTrail 提供了用户、角色或 AWS 服务在 Amazon RDS 中所执行操作的记录。</p>
+<h4 id="CloudTrail-事件"><a href="#CloudTrail-事件" class="headerlink" title="CloudTrail 事件"></a>CloudTrail 事件</h4><p>CloudTrail 将 Amazon RDS 的 API 调用作为事件捕获。一个<em>事件</em>表示来自任何源的一个请求，包括有关所请求的操作、操作的日期和时间、请求参数等方面的信息。事件包含来自 Amazon RDS 控制台的调用和对 Amazon RDS API 操作的代码调用。</p>
+<p>Amazon RDS 活动记录在 <strong>Event history</strong>（事件历史记录）中的 CloudTrail 事件中。您可以使用 CloudTrail 控制台查看AWS区域中过去 90 天内记录的 API 活动和事件。有关更多信息，请参阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html">使用 CloudTrail 事件历史记录查看事件</a>。</p>
+<h4 id="CloudTrail-跟踪"><a href="#CloudTrail-跟踪" class="headerlink" title="CloudTrail 跟踪"></a>CloudTrail 跟踪</h4><p>要持续记录 AWS 账户中的事件（包括 Amazon RDS 的事件），请创建<em>跟踪记录</em>。跟踪是一种配置，可用于将事件传送到指定的 Amazon S3 存储桶。CloudTrail 通常会在账户活动发生后的 15 分钟内传送日志文件。</p>
+<p>如果您不配置跟踪，则仍可在 CloudTrail 控制台中的 <strong>Event history（事件历史记录）</strong> 中查看最新事件。</p>
+<p>您可以为 AWS 账户创建两种类型的跟踪：应用于所有区域的跟踪，或应用于一个区域的跟踪。默认情况下，在控制台中创建跟踪时，此跟踪应用于所有区域。</p>
+<h5 id="为-CloudTrail-配置-Amazon-SNS-通知"><a href="#为-CloudTrail-配置-Amazon-SNS-通知" class="headerlink" title="为 CloudTrail 配置 Amazon SNS 通知"></a>为 CloudTrail 配置 Amazon SNS 通知</h5>
+    </div>
+
+    
+    
+    
+      
+
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/monitor/" rel="tag"><i class="fa fa-tag"></i> monitor</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/08/16/golang/" rel="prev" title="golang">
+                  <i class="fa fa-chevron-left"></i> golang
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/10/31/Aws-monitor/" rel="next" title="Aws monitor">
+                  Aws monitor <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa-solid fa-laptop-code"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">llo</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>Symbols count total: </span>
+    <span title="Symbols count total">35k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>Reading time total &asymp;</span>
+    <span title="Reading time total">31 mins.</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"fallenjlz","repo":"fallenjlz.github.io","client_id":"76f6bc2a2c51d8be4ce1","client_secret":"aefc49d0018f2b5e0920cc8f23e163c9766db35d","admin_user":"fallenjlz","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"4c960073a33ab422be7fb46650ac7b35"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
